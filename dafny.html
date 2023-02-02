@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>A verified vignette in Dafny</title>
+  <title>A verified program in Dafny</title>
   <style type="text/css">
       code{white-space: pre-wrap;}
       span.smallcaps{font-variant: small-caps;}
@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="./styling.css" />
 </head>
 <body>
-<h1 id="a-verified-vignette-in-dafny">A verified vignette in Dafny</h1>
+<h1 id="a-verified-program-in-dafny">A verified program in Dafny</h1>
 <p>In this we will implement and verify solution of two sum problem. Two sum problem asks for a pair of indices in sorted sequence such that elements at those indices add up to given sum. It is given that such indices exists. Linear time implementation uses classic <a href="https://usaco.guide/silver/2P">two pointers technique</a>.</p>
 <p>We will be using dafny for implementation and verification. Below is translation of <a href="https://rosettacode.org/wiki/Two_sum">solution</a> in dafny.</p>
 <pre><code>method find_indices (s: seq&lt;int&gt;, sm: int) 
@@ -35,7 +35,7 @@
     }
   }
 }</code></pre>
-<p>If you run above code snippet <a href="https://www.rise4fun.com/Dafny">online</a>, you will notice verification errors. It happens because dafny can’t verify that sequence access is within its bounds. Let’s fix this by providing loop invariant - predicate which is true when loop starts and after every iteration of loop including last run.</p>
+<p>If you run above code snippet using <a href="https://dafny.org/">Dafny</a>, you will notice verification errors. It happens because dafny can’t verify that sequence access is within its bounds. Let’s fix this by providing loop invariant - predicate which is true when loop starts and after every iteration of loop including last run.</p>
 <pre><code>method find_indices (s: seq&lt;int&gt;, sm: int) 
  returns (i: int, j: int)
 {
@@ -55,7 +55,7 @@
     }
   }
 }</code></pre>
-<p>Notice invariant says <code>i &lt;= j</code> where as loop condition is <code>i &lt; j</code> . This is due to loop invariant should be true after last run of loop. After last run of loop <code>i</code> is equal to <code>j</code>. If you run above code snippet it will give verification error still as loop invariant is not maintained at start if sequence is empty. To fix it temporarily you can add <code>requires |s| &gt;= 1</code> .</p>
+<p>Notice invariant says <code>i &lt;= j</code> where as loop condition is <code>i &lt; j</code> . This is due to loop invariant should be true after last run of loop. After last run of loop <code>i</code> is equal to <code>j</code>. If you run above code snippet it will give verification error as loop invariant is not maintained at start if sequence is empty. To fix it temporarily you can add <code>requires |s| &gt;= 1</code> .</p>
 <pre><code>method find_indices (s: seq&lt;int&gt;, sm: int) 
  returns (i: int, j: int)
  requires |s| &gt;= 1</code></pre>

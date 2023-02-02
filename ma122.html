@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>Solving mathematic problem using Rosette</title>
+  <title>Solving a mathematic problem using Rosette</title>
   <style type="text/css">
       code{white-space: pre-wrap;}
       span.smallcaps{font-variant: small-caps;}
@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="./styling.css" />
 </head>
 <body>
-<h1 id="solving-mathematic-problem-using-rosette">Solving mathematic problem using Rosette</h1>
+<h1 id="solving-a-mathemattic-problem-using-rosette">Solving a mathemattic problem using Rosette</h1>
 <p>Would n’t it be interesting if programming language is aided with SMT solvers. <a href="https://docs.racket-lang.org/rosette-guide/index.html">Rosette</a> is such language. Using SMT solvers Rosette can <a href="https://docs.racket-lang.org/rosette-guide/ch_essentials.html#%28part._sec~3averify%29">verify</a> that programs comply their specifications, <a href="https://docs.racket-lang.org/rosette-guide/ch_essentials.html#%28part._sec~3asynthesize%29">synthesis</a> programs given specifications, find counter examples when program doesn’t meet its specification and <a href="https://docs.racket-lang.org/rosette-guide/ch_essentials.html#%28part._sec~3asolve%29">solve puzzles</a>.</p>
 <p>In this blogpost, I will be using Rosette to solve a puzzle which is taken from <a href="https://cms.math.ca/wp-content/uploads/2021/06/CRUXv47n5-b.pdf">Crux Volume 47, Issue 5</a>.</p>
 <p><img src="./puzzle.png" /></p>
@@ -28,7 +28,7 @@
 (define carpenter (apply choose* profession))
 (define driver (apply choose* profession))
 (define plumber (apply choose* profession))</code></pre>
-<p>Let us list down constraints (fixed) which are true. Each person has different profession and person name don’t coincide with their profession. Even though we have n’t assigned profession to person in traditional sense, first constraint instructs that assiged values are all distinct.</p>
+<p>Let us list down constraints (fixed) which are true. Each person has different profession and person name don’t coincide with their profession. Even though we have n’t assigned profession to person in traditional sense, first constraint instructs that assigned values are all distinct.</p>
 <pre><code>(define (f-constraints)
   (list (distinct? baker driver carpenter plumber)
         (not (equal? baker &#39;baker))
@@ -58,8 +58,9 @@
 <pre><code>(define a-solutions 
     (filter (lambda (s) (= (length s) 1))
             (for/list ([t (range 5)])
-                (m-solve (and (apply &amp;&amp; (f-constraints))
-                              (= t (length (filter identity (v-constraints)))))))))
+                (m-solve 
+                  (and (apply &amp;&amp; (f-constraints))
+                       (= t (length (filter identity (v-constraints)))))))))
 
 (length a-solutions)
 (define sol (first (first a-solutions)))

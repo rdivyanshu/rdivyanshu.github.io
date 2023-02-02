@@ -1,4 +1,4 @@
-# A verified vignette in Dafny
+# A verified program in Dafny
 In this we will implement and verify solution of two sum problem. Two sum problem asks for a pair of indices in sorted sequence such that elements at those indices add up to given sum. It is given that such indices exists. Linear time implementation uses classic [two pointers technique](https://usaco.guide/silver/2P).
 
 We will be using dafny for implementation and verification. Below is translation of [solution](https://rosettacode.org/wiki/Two_sum) in dafny.
@@ -24,7 +24,7 @@ method find_indices (s: seq<int>, sm: int)
 }
 ```
 
-If you run above code snippet [online](https://www.rise4fun.com/Dafny), you will notice verification errors. It happens because dafny can't verify that sequence access is within its bounds. Let's fix this by providing loop invariant - predicate which is true when loop starts and after every iteration of loop including last run.
+If you run above code snippet using [Dafny](https://dafny.org/), you will notice verification errors. It happens because dafny can't verify that sequence access is within its bounds. Let's fix this by providing loop invariant - predicate which is true when loop starts and after every iteration of loop including last run.
 
 ```
 method find_indices (s: seq<int>, sm: int) 
@@ -48,7 +48,7 @@ method find_indices (s: seq<int>, sm: int)
 }
 ```
 
-Notice invariant says  `i <= j`  where as loop condition is `i < j` . This is due to loop invariant  should be true after last run of loop. After last run of loop `i` is equal to `j`. If you run above code snippet it will give verification error still as loop invariant is not maintained at start if sequence is empty. To fix it temporarily you can add `requires |s| >= 1` .
+Notice invariant says  `i <= j`  where as loop condition is `i < j` . This is due to loop invariant should be true after last run of loop. After last run of loop `i` is equal to `j`. If you run above code snippet it will give verification error as loop invariant is not maintained at start if sequence is empty. To fix it temporarily you can add `requires |s| >= 1` .
 
 ```
 method find_indices (s: seq<int>, sm: int) 
