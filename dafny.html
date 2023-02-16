@@ -158,6 +158,14 @@ twosum.dfy(7,19): Related message: loop invariant violation
 <li>pair of indices which add upto sum lies between loop variables</li>
 <li>for every pair of indices in which one of index lies outside loop variables does n’t add upto sum</li>
 </ul>
+<p>which is accomplished by following</p>
+<pre><code>(1) invariant exists m, n :: i &lt;= m &lt; n &lt;= j &amp;&amp; s[m] + s[n] == sm
+(2) invariant forall m, n :: 0 &lt;= m &lt; i &amp;&amp; m &lt; n &lt; |s| ==&gt; s[m] + s[n] != sm
+(3) invariant forall m, n :: j &lt; n &lt; |s| &amp;&amp; 0 &lt;= m &lt; n ==&gt; s[m] + s[n] != sm</code></pre>
+<p>Let’s go through informal proof of how these invariants are maintained by <code>while</code> body. We will follow example when we increase <code>i</code> by <code>1</code>, case when we decrease <code>j</code> by <code>1</code> is similar. Assume that before running <code>while</code> body array looks like this and we want to increase <code>i</code> by 1.</p>
+<p><img src="./array.png" /></p>
+<p>To prove second invariant is still being maintained we need to prove that sum of element at brown background with any other at non-white background is not equal to <code>sm</code>. Notice that case when other element is at yellow background is already covered by third invariant. For gray background case, sum with last such element is less than <code>sm</code>. Since array is sorted, sum of element at brown background and any other element at gray background should also be less than <code>sm</code>.</p>
+<p><img src="./array_viz.png" /></p>
 <pre><code>method find_indices (s: seq&lt;int&gt;, sm: int) returns (i: int, j: int)
   requires sorted(s)
   requires exists m, n :: 0 &lt;= m &lt; n &lt; |s| &amp;&amp; s[m] + s[n] == sm

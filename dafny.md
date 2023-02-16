@@ -182,6 +182,26 @@ With above lemma at hand, we can now prove postcondition holds. Addition invaria
 * pair of indices which add upto sum lies between loop variables
 * for every pair of indices in which one of index lies outside loop variables does n't add upto sum
 
+which is accomplished by following
+
+```
+(1) invariant exists m, n :: i <= m < n <= j && s[m] + s[n] == sm
+(2) invariant forall m, n :: 0 <= m < i && m < n < |s| ==> s[m] + s[n] != sm
+(3) invariant forall m, n :: j < n < |s| && 0 <= m < n ==> s[m] + s[n] != sm
+```
+
+Let's go through informal proof of how these invariants are maintained by `while` body. We will follow example when we
+increase `i` by `1`, case when we decrease `j` by `1` is similar.
+Assume that before running `while` body array looks like this and we want to increase `i` by 1.
+
+![](./array.png)
+
+To prove second invariant is still being maintained we need to prove that sum of element at brown background with any
+other at non-white background is not equal to `sm`. Notice that case when other element is at yellow background is
+already covered by third invariant. For gray background case, sum with last such element is less than `sm`. Since array
+is sorted, sum of element at brown background and any other element at gray background should also be less than `sm`.
+
+![](./array_viz.png)
 
 ```
 method find_indices (s: seq<int>, sm: int) returns (i: int, j: int)
