@@ -17,14 +17,28 @@ method find_indices (s: seq<int>, sm: int)
     else if (s[i] + s[j] > sm){
       j := j - 1;
     }
-    else{
+    else {
       return i, j;
     }
   }
 }
 ```
 
-If you run above code snippet using [Dafny](https://dafny.org/), you will notice verification errors. It happens because dafny can't verify that sequence access is within its bounds. Let's fix this by providing loop invariant - predicate which is true when loop starts and after every iteration of loop including last run.
+If you run above code snippet using [Dafny](https://dafny.org/), you will notice following verification errors.
+
+```
+twosum.dfy(8,8): Error: index out of range
+  |
+8 |     if (s[i] + s[j] < sm){
+  |         ^^^^
+
+twosum.dfy(8,15): Error: index out of range
+  |
+8 |     if (s[i] + s[j] < sm){
+  |                ^^^^
+```
+
+It happens because dafny can't verify that sequence access is within its bounds. Let's fix this by providing loop invariant - predicate which is true when loop starts and after every iteration of loop including last run.
 
 ```
 method find_indices (s: seq<int>, sm: int) 
@@ -41,14 +55,28 @@ method find_indices (s: seq<int>, sm: int)
     else if (s[i] + s[j] > sm){
       j := j - 1;
     }
-    else{
+    else {
       return i, j;
     }
   }
 }
 ```
 
-Notice invariant says  `i <= j`  where as loop condition is `i < j` . This is due to loop invariant should be true after last run of loop. After last run of loop `i` is equal to `j`. If you run above code snippet it will give verification error as loop invariant is not maintained at start if sequence is empty. To fix it temporarily you can add `requires |s| >= 1` .
+Notice invariant says  `i <= j`  where as loop condition is `i < j` . This is due to loop invariant should be true after last run of loop. After last run of loop `i` is equal to `j`. If you run above code snippet it will give verification error still reproduced below.
+
+```
+twosum.dfy(7,19): Error: This loop invariant might not hold on entry.
+  |
+7 |     invariant 0 <= i <= j < |s|
+  |                    ^^^^^^
+
+twosum.dfy(7,19): Related message: loop invariant violation
+  |
+7 |     invariant 0 <= i <= j < |s|
+  |                    ^^^^^^
+```
+
+Loop invariant is not maintained at start if sequence is empty. To fix it temporarily you can add `requires |s| >= 1` .
 
 ```
 method find_indices (s: seq<int>, sm: int) 
@@ -91,14 +119,14 @@ method find_indices (s: seq<int>, sm: int)
     else if (s[i] + s[j] > sm){
       j := j - 1;
     }
-    else{
+    else {
       return i, j;
     }
   }
 }
 ```
 
-This is runnable and verifiable. But it does n't say anything about returned indices. We need contract attached to `find_indices`  that it returns right indices. Using `ensures`, we can do exactly that. It adds postcondition to method - predicates which must hold when method returns. Let's add what we intended to return. 
+This is runnable and verifiable. But it does n't say anything about returned indices. We need contract attached to `find_indices` that it returns right indices. Using `ensures`, we can do exactly that. It adds postcondition to method - predicates which must hold when method returns. Let's add what we intended to return. 
 
 ```
 method find_indices (s: seq<int>, sm: int) 
@@ -114,7 +142,7 @@ Before verifying postcondition, we need to take little detour to prove small lem
 
 Lemma - Given sorted sequence `s` and two indices `m`, `n` such that `m <= n` then `s[m] <= s[n]`.
 
-Translation of lemma in dafny and its verification is given in code snippet below.  Proof uses induction on `m`, `n`, with difference between `n` and `m` decreasing when relying on inductive argument. If `m == n` then `s[m] <= s[n]` else using induction `m + 1 <= n` implies `s[m+1] <= s[n]`. We additionally require `s[m] <= s[m+1]` which together with `s[m+1] <= s[n]` will prove `s[m] <= s[n]`.
+Translation of lemma in dafny and its verification is given in code snippet below.  Proof uses induction on `m`, `n`, with difference between `n` and `m` decreasing when relying on inductive argument. If `m == n` then `s[m] <= s[n]` else using induction we know that `m + 1 <= n` implies `s[m+1] <= s[n]` which together with `s[m] <= s[m+1]` will prove `s[m] <= s[n]`.
 
 We need to fetch information `s[m] <= s[m+1]` from sorted predicate. `sorted(s[m..])` implies `s[m] <= s[m+1]` by definition. Stating `sorted(s[m..])` holds requires iterative argument which is done by `while` loop.
 
@@ -190,7 +218,7 @@ method find_indices (s: seq<int>, sm: int) returns (i: int, j: int)
       }
       j := j - 1;
     }
-    else{
+    else {
       return i, j;
     }
   }
