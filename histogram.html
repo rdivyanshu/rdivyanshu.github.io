@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>A bit on Quantile Sketching</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" href="./styling.css" />
+</head>
+<body>
+<h1 id="a-bit-on-quantile-sketching">A bit on Quantile Sketching</h1>
+<p>As part of production monitoring it is standard practice to measure p95, p99 latencies. We also want to query these metrics over dynamic time range. What is p99 latency over last 3 hours? What is p99 latency over last 5 minutes?</p>
+<p>One option is calculate quantiles at client using <a href="https://github.com/statsite/statsite">statsite</a> which will calculate configured quantiles for timer metrics over flush interval and then send data to monitoring servers for query. Quantiles statsite calculates is approximate to reduce memory footprint of statsite library. There are other issues with this approach besides quantiles being approximate.</p>
+<ul>
+<li>If configured quantiles are p95 and p99, you can’t query p99.9. When using this approach you need to know before hand what quantiles you care about.</li>
+<li>It is not possible to find quantile over dynamic time range. Only quantile over flush interval will right (within error bounds according to approximation algorithm).</li>
+<li>It is not possible to find p99 latency, assuming p99 is configured quantile, across all instances of service.</li>
+</ul>
+<p>Reason for last two is there is no meaningful way to combine individual quantiles.</p>
+<p>In following discussions I will assuming that quantiles are calculated on servers of monitoring stack. To accurately calculate quantities we can send all latencies data to server from application instances making heavy demand on storage and computation (at query time) on monitoring systems. This is unacceptable. To avoid it modern monitoring systems use quantile sketches which can calculate quantiles values within some error bounds by storing summary of data.</p>
+<p>Idea behind quantile sketching is clients will send out latency summary bucketed into bins with each bin measuring how many times latency falls within bounds of bucket. Using above data it is possible to find out in which bucket queried quantile will fall. After which linear interpolation can give point estimate of quantile.</p>
+<p>Let’s go through steps to find p95 from below histogram</p>
+<p><img src="hist.png" /></p>
+<ul>
+<li>Our dataset contains 330 entries. If we sort our dataset the value at index <code>floor(q*(n-1))+1</code> is (Lower) q-quantile. Plugging values in formula we get p95 should be 313th entry.</li>
+<li>313th entry lies in bucket 70-80. Assuming uniform distribution, 313th entry should be 70+(313-240)*(10/80) which amounts to 79.12, our p95 estimate.</li>
+</ul>
+<h3 id="mergeability">Mergeability</h3>
+<p>Querying over dynamic time range and over multiple instances requires mergeability - given multiple quantile sketches it should be possible to combine them to get overall quantiles. Using histograms mergeability requires bin boundaries are same so we can add corresponding bin counters to get combined quantile sketch.</p>
+<h3 id="error-bounds">Error Bounds</h3>
+<p>In example above, point estimate of p95 is 79.12. Since it is estimate, it is better to get error bounds. As we don’t have any insight into bins, it is possible that true p95 lies anywhere between 70 (exclusive) and 80. Relative error can be 13% when true p95 is near 70 and 1% when it is 80. Relative error of p95 is bounded above by 13%. Following table shows what is maximum relative error (in percentage) across quantiles which fall within that bucket. As you can see maximum relative error varies across buckets. It is possible to design buckets such that maximum relative error is fixed. If buckets are log-based with <code>1.125</code> multiplier (<code>(1,1.125], (1.125,(1.125)^2] ...</code>) then maximum relative error will be 12.5% across buckets.</p>
+<table style="width:47%;">
+<colgroup>
+<col style="width: 19%" />
+<col style="width: 27%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Bucket</th>
+<th>Max Relative Error %</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>40-50</td>
+<td>25</td>
+</tr>
+<tr class="even">
+<td>50-60</td>
+<td>20</td>
+</tr>
+<tr class="odd">
+<td>60-70</td>
+<td>16</td>
+</tr>
+<tr class="even">
+<td>70-80</td>
+<td>14</td>
+</tr>
+<tr class="odd">
+<td>80-90</td>
+<td>12</td>
+</tr>
+</tbody>
+</table>
+<h3 id="off-the-shelf-sketches">Off the shelf sketches</h3>
+<p>Prometheus’s default bucket configuration can be seen <a href="https://github.com/prometheus/client_python/blob/v0.16.0/prometheus_client/metrics.py#L544">here</a>. Notice that last bucket upper bound is <code>Inf</code>. If quantile falls into last bucket, it will return 10.0 as quantile estimate, lower bound of last bucket. It is not possible to linear interpolate in last bucket as upper bound is <code>Inf</code>. As a result it is hard to find maximum relative error for last bucket. VictoriaMetrics divides <code>[10^(-9),10^18]</code> range into log based buckets with <code>10^(1/18)</code> multiplier <a href="https://github.com/VictoriaMetrics/metrics/blob/v1.23.1/histogram.go#L11">[github]</a>. This gives ability to capture wide range of observation (nanoseconds in time scale, million of terabytes in storage scale) with 13.6% worst case relative estimate of quantile. HdrHistogram, DDSketch and Circllhist are other quantile sketches which are used in industry.</p>
+</body>
+</html>
