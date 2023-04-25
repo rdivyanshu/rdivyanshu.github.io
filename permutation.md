@@ -132,11 +132,11 @@ is [calculation](https://cseweb.ucsd.edu/~npolikarpova/publications/vstte13.pdf)
 ```
 
 Complete proof of third postcodition is listed below. Proof uses case analysis on index used in `greater` predicate.
-There are three cases to consider. If `k < i-1` then `arr[..k] == res[..k]` and `arr[k] == res[k]`.
-It is easy to prove `greater(res, m)` from these facts. In fact Dafny is able to do it automatically. Case `k > i-1` is
-impossible which we show by proving false. Observe that `m[k]` should be in `multiset(m[k..])` hence in `multiset(arr[k..])`.
+There are three cases to consider. If `k` is less than `i-1` then `arr[..k] == res[..k]` and `arr[k] == res[k]`.
+It is easy to prove `greater(res, m)` from these facts. In fact Dafny is able to do it automatically. Case when `k` is greater than
+`i-1` is impossible which we show by proving false. Observe that `m[k]` should be in `multiset(m[k..])` hence in `multiset(arr[k..])`.
 Since `arr[k..]` is decreasing sequence `m[k]` should be less or equal to `arr[k]`, first element of sequence. Starting 
-with assumption `arr[k] < m[k]` we proved that `m[k] <= arr[k]`, a contradiction.
+with assumption `arr[k]` is less than `m[k]` we proved that `m[k]` is less or equal to `arr[k]`, a contradiction.
 
 ```
 forall m | permutation(arr[..], m) && greater(arr[..], m) ensures
@@ -215,10 +215,12 @@ forall m | permutation(arr[..], m) && greater(arr[..], m) ensures
   }
 ```
 
-Last case `k == i-1` requires further case analysis. If `m[k] == res[k]` then `multiset(m[(k+1)..])` is equal to 
-`multiset(res[(k+1)..])`. By using `increasing_multiset_aux_lemma` which states that increasing sequence is 
-smallest among sequences generated from multiset we complete the proof. Case `m[k] < res[k]` is also impossible
-as we picked smallest element greater than `res[k]` in `multiset(arr[k..])` to replace it with. Using `forall` statement
-we remind Dafny of this fact. Establishing false follows similiar pattern as earlier contradiction.
+Finally case when `k` is equal `i-1` requires further case analysis. If `m[k]` is equal to 
+`res[k]` then `multiset(m[(k+1)..])` is equal to `multiset(res[(k+1)..])`. By using 
+`increasing_multiset_aux_lemma` which states that increasing sequence is smallest among sequences 
+generated from multiset we complete the proof. Case `m[k]` is less tha `res[k]` is also impossible 
+as we picked smallest element greater than `res[k]` in `multiset(arr[k..])` to replace it with. 
+Using `forall` statement we remind Dafny of this fact. Establishing false follows similiar pattern 
+as earlier contradiction.
 
 That's all.
