@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Another verified program in Dafny</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" href="./styling.css" />
+</head>
+<body>
+<h1 id="another-verified-program-in-dafny">Another verified program in Dafny</h1>
+<p>Permutations of multiset can be generated in lexicographical order. Wikipedia has description of how such <a href="https://en.wikipedia.org/wiki/Permutation#Generation_in_lexicographic_order">algorithm</a> works. Let’s implement <code>next_permutation</code> in Dafny which given array as input returns next permutation. Fun and challenging part of implementing in Dafny is verification.</p>
+<p>First we need to identify whether two arrays (sequences) are permutation of each other.</p>
+<pre><code>predicate permutation(m: seq&lt;nat&gt;, n: seq&lt;nat&gt;)
+{
+  &amp;&amp; |m| == |n| 
+  &amp;&amp; multiset(m[..]) == multiset(n[..])
+}</code></pre>
+<p>We also need to figure out lexicographical order of sequences - <code>(greater m n)</code> is true when n is lexicographically greater than m.</p>
+<pre><code>predicate greater(m: seq&lt;nat&gt;, n: seq&lt;nat&gt;)
+  requires |m| == |n|
+{
+  exists j :: 0 &lt;= j &lt; |m| 
+     &amp;&amp; (forall i :: 0 &lt;= i &lt; j ==&gt; m[i] == n[i]) 
+     &amp;&amp; m[j] &lt; n[j]
+}</code></pre>
+<p>With setup being done, let’s write interface of <code>next_permutation</code>. If input is largest permutation then we can’t find next permutation. It is captured by first postcondition - if <code>ok</code> is false then there is no next permutation which happens when array is largest in lexicographical order (i.e. <code>arr</code> is decreasing sequence). Next postcondition says that array we return is indeed permutation of input and it is greater than input. Last postcondition enforces that if there is another sequence <code>m</code> such that <code>m</code> is permutation of <code>arr</code> and greater than <code>arr</code> then either it is equal to <code>res</code> or <code>m</code> is greater than <code>res</code>. This inforces that <code>res</code> is next permuatition.</p>
+<pre><code>method next_permutation(arr: array&lt;nat&gt;)
+  returns (ok: bool, res: array&lt;nat&gt;)
+  ensures !ok ==&gt; decreasing(arr[..])
+  ensures ok ==&gt; permutation(arr[..], res[..]) &amp;&amp; greater(arr[..], res[..])
+  ensures ok ==&gt; forall m :: permutation(arr[..], m) &amp;&amp; greater(arr[..], m) ==&gt;
+                  greater(res[..], m) || (res[..] == m)</code></pre>
+<p>Proving last postcondition will be hardest so let’s ignore this for now. Code listed below is implementation of algorithm on Wikipedia with few invariants thrown below while loop. In the end of method we ask Dafny to prove postconditions for us which it obliges. We needed one additional lemma <code>identity_permutation</code> and implementation of <code>copy</code> and <code>reverse</code> methods with exhaustive postconditions. Implemenation of which can be seen <a href="https://gist.github.com/rdivyanshu/c7ced3c3ff2bfc9c3cc38b2cae6609f0">here</a> in final verified program.</p>
+<pre><code>method next_permutation(arr: array&lt;nat&gt;)
+  returns (ok: bool, res: array&lt;nat&gt;)
+  ensures !ok ==&gt; decreasing(arr[..])
+  ensures ok ==&gt; permutation(arr[..], res[..]) &amp;&amp; greater(arr[..], res[..])
+{
+  res := new nat[arr.Length];
+  copy(arr, res);
+  
+  if arr.Length &lt;= 0 {
+    ok := false;
+    return;
+  }
+  
+  var i := arr.Length - 1;
+  while i &gt; 0 &amp;&amp; arr[i-1] &gt;= arr[i]
+    invariant i &gt;= 0
+    invariant forall k :: i &lt; k &lt; arr.Length ==&gt; arr[k-1] &gt;= arr[k]
+  {
+    i := i-1;
+  }
+
+  if i &lt;= 0 {
+    ok := false;
+    return;
+  }
+
+  var j := arr.Length - 1;
+
+  while arr[j] &lt;= arr[i-1]
+    decreases j - i
+    invariant j &gt;= i
+    invariant forall k :: j &lt; k &lt; arr.Length ==&gt; arr[k] &lt;= arr[i-1]
+  {
+     j := j - 1;
+  }
+
+  identity_permutation(arr[..], res[..]);
+
+  res[i-1], res[j] := res[j], res[i-1];
+  reverse(res, i, res.Length-1);
+  assert permutation(arr[..], res[..]);
+  assert greater(arr[..], res[..]);
+
+  ok := true;
+}</code></pre>
+<p>One of favourite saying from <a href="https://leino.science/papers/krml233.pdf">Developing Verified Programs in Dafny</a> is - How strong or weak to make a specification is an engineering choice—a trade-off between assurance and the price to obtain that assurance. We want to prove third postcondition. So let’s pay the price - providing argument with enough details that computer can accept it. Convicing will require lines of code as large as initial implementation, as Dafny can’t figure out details like it did for first two postconditions.</p>
+<p>Few observations that will help latter :</p>
+<ul>
+<li><code>arr[i..]</code> is decreasing sequence (invariant of first while loop).</li>
+<li><code>arr[i-1]</code> is greater or equal to elements of sequence <code>arr[(j+1)..]</code> (invariant of second while loop).<br />
+</li>
+<li><code>arr[i-1]</code> is less than elements of sequence <code>arr[i..(j+1)]</code>. This follows from first observation and loop condition of second while loop.</li>
+<li><code>res[i..]</code> is increasing sequence. Initially <code>res</code> is copy of <code>arr</code> hence <code>res[i..]</code> is decreasing sequence. Even after swaping <code>res[i-1]</code> and <code>res[j]</code>, <code>res[i..]</code> is decreasing sequence. Finally reverse operation makes <code>res[i..]</code> an increasing sequence.</li>
+</ul>
+<p>Adding assert statement makes Dafny prove last observation which it does without any help. Second statement in code snippet below is <a href="https://cseweb.ucsd.edu/~npolikarpova/publications/vstte13.pdf">calculation</a> proof to establish obvious fact.</p>
+<pre><code>  assert increasing(res[i..]);
+  calc {
+    multiset(arr[(i-1)..]);
+    { assert arr[..] == arr[..(i-1)] + arr[(i-1)..]; }
+    multiset(arr[..]) - multiset(arr[..(i-1)]);
+    { assert arr[..(i-1)] == res[..(i-1)]; }
+    multiset(res[..]) - multiset(res[..(i-1)]);
+    { assert res[..] == res[..(i-1)] + res[(i-1)..]; }
+    multiset(res[(i-1)..]);
+  }</code></pre>
+<p>Complete proof of third postcodition is listed below. Proof uses case analysis on index used in <code>greater</code> predicate. There are three cases to consider. If <code>k &lt; i-1</code> then <code>arr[..k] == res[..k]</code> and <code>arr[k] == res[k]</code>. It is easy to prove <code>greater(res, m)</code> from these facts. In fact Dafny is able to do it automatically. Case <code>k &gt; i-1</code> is impossible which we show by proving false. Observe that <code>m[k]</code> should be in <code>multiset(m[k..])</code> hence in <code>multiset(arr[k..])</code>. Since <code>arr[k..]</code> is decreasing sequence <code>m[k]</code> should be less or equal to <code>arr[k]</code>, first element of sequence. Starting with assumption <code>arr[k] &lt; m[k]</code> we proved that <code>m[k] &lt;= arr[k]</code>, a contradiction.</p>
+<pre><code>forall m | permutation(arr[..], m) &amp;&amp; greater(arr[..], m) ensures
+    greater(res[..], m) || (res[..] == m)
+  {
+    if res[..] == m {}
+    else {
+      var k :| 0 &lt;= k &lt; arr.Length &amp;&amp; 
+           (forall l :: 0 &lt;= l &lt; k ==&gt; arr[l] == m[l]) &amp;&amp; arr[k] &lt; m[k];
+      calc {
+        multiset(arr[k..]);
+        { assert arr[..] == arr[..k] + arr[k..]; }
+        multiset(arr[..]) - multiset(arr[..k]);
+        { 
+          assert permutation(arr[..], m); 
+          identity_permutation(arr[..k], m[..k]); 
+        }
+        multiset(m) - multiset(m[..k]);
+        { assert m == m[..k] + m[k..]; }
+        multiset(m[k..]);
+      }
+      if k &lt; i - 1 {}
+      else if k &gt; i - 1 {
+        assert m[k] in multiset(arr[k..]) by
+           { assert multiset(arr[k..]) == multiset(m[k..]); }
+        assert m[k] &lt;= arr[k] by
+            { 
+              assert decreasing(arr[k..]); 
+              decreasing_aux_lemma(m[k], arr[k..]); 
+            }
+        assert false by
+          { assert m[k] &lt;= arr[k]; assert arr[k] &lt; m[k]; }
+      }
+      else {
+        if m[k] == res[k] {
+          calc {
+            multiset(m[(k+1)..]);
+            { assert m[k..] == m[k..(k+1)] + m[(k+1)..]; }
+            multiset(m[k..]) - multiset(m[k..(k+1)]);
+            { assert m[k..(k+1)] == res[k..(k+1)]; }
+            multiset(arr[k..]) - multiset(res[k..(k+1)]);
+            multiset(res[k..]) - multiset(res[k..(k+1)]);
+            { assert res[k..] == res[k..(k+1)] + res[(k+1)..]; }
+            multiset(res[(k+1)..]);
+          }
+          assert greater(res[..], m) by {
+            increasing_multiset_aux_lemma(res[(k+1)..], m[(k+1)..]);
+          }
+        }
+        else if m[k] &lt; res[k] {
+          forall l | l in multiset(arr[k..]) &amp;&amp; arr[k] &lt; l 
+            ensures res[k] &lt;= l 
+          {
+            var idx :| k &lt;= idx&lt; arr.Length &amp;&amp; arr[idx] == l;
+            if idx == i - 1 {
+              assert false;
+            }
+            if i &lt;= idx &lt;= j {
+              assert decreasing(arr[idx..]);
+              decreasing_aux_lemma(arr[j], arr[idx..]);
+              assert arr[idx] &gt;= res[k] by {
+                assert arr[idx] &gt;= arr[j];
+              }
+            }
+          }
+          assert m[k] in multiset(arr[k..]) by {
+            assert m[k] in multiset(m[k..]);
+          }
+          assert false by {
+           assert arr[k] &lt; m[k];
+           assert res[k] &lt;= m[k];
+          }
+        }
+      }
+    }
+  }</code></pre>
+<p>Last case <code>k == i-1</code> requires further case analysis. If <code>m[k] == res[k]</code> then <code>multiset(m[(k+1)..])</code> is equal to <code>multiset(res[(k+1)..])</code>. By using <code>increasing_multiset_aux_lemma</code> which states that increasing sequence is smallest among sequences generated from multiset we complete the proof. Case <code>m[k] &lt; res[k]</code> is also impossible as we picked smallest element greater than <code>res[k]</code> in <code>multiset(arr[k..])</code> to replace it with. Using <code>forall</code> statement we remind Dafny of this fact. Establishing false follows similiar pattern as earlier contradiction.</p>
+<p>That’s all.</p>
+</body>
+</html>

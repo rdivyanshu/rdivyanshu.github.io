@@ -1,16 +1,17 @@
 # Another verified program in Dafny
 
 Permutations of multiset can be generated in lexicographical order. Wikipedia has description
-of how such [algorithm](https://en.wikipedia.org/wiki/Permutation#Generation_in_lexicographic_order) works. Let's implement `next_permutation` in Dafny which given array 
-as input returns next permutation. Fun and challenging part of implementing in 
-Dafny is verification.
+of how such [algorithm](https://en.wikipedia.org/wiki/Permutation#Generation_in_lexicographic_order) works. 
+Let's implement `next_permutation` in Dafny which given array  as input returns next permutation. 
+Fun and challenging part of implementing in Dafny is verification.
 
 First we need to identify whether two arrays (sequences) are permutation of each other.
 
 ```
 predicate permutation(m: seq<nat>, n: seq<nat>)
 {
-  |m| == |n| && multiset(m[..]) == multiset(n[..])
+  && |m| == |n| 
+  && multiset(m[..]) == multiset(n[..])
 }
 ```
 
@@ -21,7 +22,9 @@ true when n is lexicographically greater than m.
 predicate greater(m: seq<nat>, n: seq<nat>)
   requires |m| == |n|
 {
-  exists j :: 0 <= j < |m| && (forall i :: 0 <= i < j ==> m[i] == n[i]) && m[j] < n[j]
+  exists j :: 0 <= j < |m| 
+     && (forall i :: 0 <= i < j ==> m[i] == n[i]) 
+     && m[j] < n[j]
 }
 ```
 
@@ -98,25 +101,22 @@ method next_permutation(arr: array<nat>)
 }
 ```
 
-One of favorite sentence from [Developing Verified Programs in Dafny](https://leino.science/papers/krml233.pdf)  is 
+One of favourite saying from [Developing Verified Programs in Dafny](https://leino.science/papers/krml233.pdf) is 
 - How strong or weak to make a specification is an engineering choice—a trade-off between assurance and the price to obtain 
-that assurance. We want to prove third postcondition and let's pay the price - providing argument in painsacking details 
-that even computer can accept it. Convicing will require lines of code as large as initial implementation, as Dafny can't figure 
+that assurance. We want to prove third postcondition. So let's pay the price - providing argument with enough details 
+that computer can accept it. Convicing will require lines of code as large as initial implementation, as Dafny can't figure 
 out details like it did for first two postconditions.
 
-Few observations: 
+Few observations that will help latter : 
 
-- Notice invariant under first while loop, `arr[i..]` is decreasing sequence.
-- `arr[i-1]` is greater or equal to elements of sequence `arr[(j+1)..]`.  
-- `arr[i-1]` is less than elements of sequence `arr[i..(j+1)]`. This follows from 
-   first and second observation.
-- `res[i..]` is increasing sequence. Swapping `res[i-1]` and `res[j]`
-   excludes `res[j]` from sequence `res[i..]` and includes `res[i-1]` in sequence 
-   `res[i..]` such that it is still decreasing. Finally reverse operation makes it increasing sequence.
+- `arr[i..]` is decreasing sequence (invariant of first while loop).
+- `arr[i-1]` is greater or equal to elements of sequence `arr[(j+1)..]` (invariant of second while loop).  
+- `arr[i-1]` is less than elements of sequence `arr[i..(j+1)]`. This follows from first observation and loop condition of second while loop.
+- `res[i..]` is increasing sequence. Initially `res` is copy of `arr` hence `res[i..]` is decreasing sequence. Even after swaping `res[i-1]` and `res[j]`,
+   `res[i..]` is decreasing sequence. Finally reverse operation makes `res[i..]` an increasing sequence.
 
-Adding assert statement makes dafny to prove last observation which it does without any hint. Second statement below
-is [calculation](https://cseweb.ucsd.edu/~npolikarpova/publications/vstte13.pdf) proof to establish if two sequences are from same multiset with common prefix then multisets from
-suffixes are equal.
+Adding assert statement makes Dafny prove last observation which it does without any help. Second statement in code snippet below
+is [calculation](https://cseweb.ucsd.edu/~npolikarpova/publications/vstte13.pdf) proof to establish obvious fact.
 
 ```
   assert increasing(res[i..]);
@@ -131,6 +131,13 @@ suffixes are equal.
   }
 ```
 
+Complete proof of third postcodition is listed below. Proof uses case analysis on index used in `greater` predicate.
+There are three cases to consider. If `k < i-1` then `arr[..k] == res[..k]` and `arr[k] == res[k]`.
+It is easy to prove `greater(res, m)` from these facts. In fact Dafny is able to do it automatically. Case `k > i-1` is
+impossible which we show by proving false. Observe that `m[k]` should be in `multiset(m[k..])` hence in `multiset(arr[k..])`.
+Since `arr[k..]` is decreasing sequence `m[k]` should be less or equal to `arr[k]`, first element of sequence. Starting 
+with assumption `arr[k] < m[k]` we proved that `m[k] <= arr[k]`, a contradiction.
+
 ```
 forall m | permutation(arr[..], m) && greater(arr[..], m) ensures
     greater(res[..], m) || (res[..] == m)
@@ -143,7 +150,10 @@ forall m | permutation(arr[..], m) && greater(arr[..], m) ensures
         multiset(arr[k..]);
         { assert arr[..] == arr[..k] + arr[k..]; }
         multiset(arr[..]) - multiset(arr[..k]);
-        { assert permutation(arr[..], m); identity_permutation(arr[..k], m[..k]); }
+        { 
+          assert permutation(arr[..], m); 
+          identity_permutation(arr[..k], m[..k]); 
+        }
         multiset(m) - multiset(m[..k]);
         { assert m == m[..k] + m[k..]; }
         multiset(m[k..]);
@@ -153,7 +163,10 @@ forall m | permutation(arr[..], m) && greater(arr[..], m) ensures
         assert m[k] in multiset(arr[k..]) by
            { assert multiset(arr[k..]) == multiset(m[k..]); }
         assert m[k] <= arr[k] by
-            { assert decreasing(arr[k..]); decreasing_aux_lemma(m[k], arr[k..]); }
+            { 
+              assert decreasing(arr[k..]); 
+              decreasing_aux_lemma(m[k], arr[k..]); 
+            }
         assert false by
           { assert m[k] <= arr[k]; assert arr[k] < m[k]; }
       }
@@ -174,7 +187,9 @@ forall m | permutation(arr[..], m) && greater(arr[..], m) ensures
           }
         }
         else if m[k] < res[k] {
-          forall l | l in multiset(arr[k..]) && arr[k] < l ensures res[k] <= l {
+          forall l | l in multiset(arr[k..]) && arr[k] < l 
+            ensures res[k] <= l 
+          {
             var idx :| k <= idx< arr.Length && arr[idx] == l;
             if idx == i - 1 {
               assert false;
@@ -199,5 +214,11 @@ forall m | permutation(arr[..], m) && greater(arr[..], m) ensures
     }
   }
 ```
+
+Last case `k == i-1` requires further case analysis. If `m[k] == res[k]` then `multiset(m[(k+1)..])` is equal to 
+`multiset(res[(k+1)..])`. By using `increasing_multiset_aux_lemma` which states that increasing sequence is 
+smallest among sequences generated from multiset we complete the proof. Case `m[k] < res[k]` is also impossible
+as we picked smallest element greater than `res[k]` in `multiset(arr[k..])` to replace it with. Using `forall` statement
+we remind Dafny of this fact. Establishing false follows similiar pattern as earlier contradiction.
 
 That's all.
