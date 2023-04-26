@@ -35,7 +35,7 @@ lexicographical order (i.e. `arr` is decreasing sequence). Next postcondition sa
 we return is indeed permutation of input and it is greater than input. Last postcondition 
 enforces that if there is another sequence `m` such that `m` is permutation of `arr` and greater 
 than `arr` then either it is equal to `res` or `m` is greater than `res`. This inforces that `res` 
-is next permuatition.
+is next permutation.
 
 ```
 method next_permutation(arr: array<nat>)
@@ -150,10 +150,7 @@ forall m | permutation(arr[..], m) && greater(arr[..], m) ensures
         multiset(arr[k..]);
         { assert arr[..] == arr[..k] + arr[k..]; }
         multiset(arr[..]) - multiset(arr[..k]);
-        { 
-          assert permutation(arr[..], m); 
-          identity_permutation(arr[..k], m[..k]); 
-        }
+        { assert permutation(arr[..], m); identity_permutation(arr[..k], m[..k]); }
         multiset(m) - multiset(m[..k]);
         { assert m == m[..k] + m[k..]; }
         multiset(m[k..]);
@@ -161,12 +158,9 @@ forall m | permutation(arr[..], m) && greater(arr[..], m) ensures
       if k < i - 1 {}
       else if k > i - 1 {
         assert m[k] in multiset(arr[k..]) by
-           { assert multiset(arr[k..]) == multiset(m[k..]); }
+          { assert multiset(arr[k..]) == multiset(m[k..]); }
         assert m[k] <= arr[k] by
-            { 
-              assert decreasing(arr[k..]); 
-              decreasing_aux_lemma(m[k], arr[k..]); 
-            }
+          { assert decreasing(arr[k..]); decreasing_aux_lemma(m[k], arr[k..]); }
         assert false by
           { assert m[k] <= arr[k]; assert arr[k] < m[k]; }
       }
@@ -190,7 +184,7 @@ forall m | permutation(arr[..], m) && greater(arr[..], m) ensures
           forall l | l in multiset(arr[k..]) && arr[k] < l 
             ensures res[k] <= l 
           {
-            var idx :| k <= idx< arr.Length && arr[idx] == l;
+            var idx :| k <= idx < arr.Length && arr[idx] == l;
             if idx == i - 1 {
               assert false;
             }
@@ -215,12 +209,12 @@ forall m | permutation(arr[..], m) && greater(arr[..], m) ensures
   }
 ```
 
-Finally case when `k` is equal `i-1` requires further case analysis. If `m[k]` is equal to 
+Finally we arrive at case when `k` is equal `i-1`. It requires further case analysis. If `m[k]` is equal to 
 `res[k]` then `multiset(m[(k+1)..])` is equal to `multiset(res[(k+1)..])`. By using 
 `increasing_multiset_aux_lemma` which states that increasing sequence is smallest among sequences 
-generated from multiset we complete the proof. Case `m[k]` is less tha `res[k]` is also impossible 
+generated from multiset we complete the proof. Case `m[k]` is less than `res[k]` is also impossible 
 as we picked smallest element greater than `res[k]` in `multiset(arr[k..])` to replace it with. 
 Using `forall` statement we remind Dafny of this fact. Establishing false follows similiar pattern 
 as earlier contradiction.
 
-That's all.
+Final verified program with all auxiliary lemma is listed [here](https://gist.github.com/rdivyanshu/c7ced3c3ff2bfc9c3cc38b2cae6609f0). That's all.
