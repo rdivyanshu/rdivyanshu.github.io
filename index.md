@@ -1,4 +1,7 @@
 # Blogs
+### July 2023
+- [Encoding Hitori in Answer Set Programming](https://rdivyanshu.github.io/asp.html)
+
 ### April 2023
 - [Another verified program in Dafny](https://rdivyanshu.github.io/permutation.html)
 - [A bit on Quantile Sketching](https://rdivyanshu.github.io/histogram.html) 
