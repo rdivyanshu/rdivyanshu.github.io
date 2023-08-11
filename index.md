@@ -1,4 +1,7 @@
 # Blogs
+### August 2023
+- [Stuttering Steps and Temporal Formulas in TLA+](https://rdivyanshu.github.io/temporal.html)
+
 ### July 2023
 - [Encoding Hitori in Answer Set Programming](https://rdivyanshu.github.io/asp.html)
 

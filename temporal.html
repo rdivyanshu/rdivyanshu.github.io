@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Stuttering Steps and Temporal Formulas in TLA+</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" href="./styling.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS_CHTML-full" type="text/javascript"></script>
+</head>
+<body>
+<h1 id="stuttering-steps-and-temporal-formulas-in-tla">Stuttering Steps and Temporal Formulas in TLA+</h1>
+<p>Let’s say you want to specify Timer in <code>TLA+</code> which counts down <code>5</code> minutes of time.</p>
+<pre><code>---------------------------------MODULE TIMER --------------------------------------
+
+EXTENDS Naturals
+
+VARIABLE minutes
+
+CHECK == minutes \in (0..5)
+
+INIT == minutes = 5
+NEXT == IF minutes &gt; 0 
+           THEN minutes&#39; = minutes - 1
+           ELSE minutes&#39; = minutes
+
+SPEC == INIT /\ [][NEXT]_&lt;&lt;minutes&gt;&gt;
+
+====================================================================================
+</code></pre>
+<p>Code listed above shows <code>TLA+</code> specification for the same, assuming you want minutes to decrease by <code>1</code> in single step until it reaches <code>0</code>. Ideally you want <code>SPEC</code> to be <code>INIT /\ []NEXT</code> representing system behavior as shown in figure.</p>
+<p><img src="system-behavior1.png" /></p>
+<p>But alas <code>TLA+</code> doesn’t allow it. It requires you to account for stuttering steps which forces you to change <code>SPEC</code> to <code>INIT /\ [][NEXT]_&lt;&lt;minutes&gt;&gt;</code>. Some of system behavior satisfying <code>SPEC</code> is shown below.</p>
+<p><img src="system-behavior1.png" /> <img src="system-behavior2.png" /> <img src="system-behavior3.png" /></p>
+<p>Next you want to check temporal formula (property) that <code>eventually</code> minutes will be 0 <code>always</code>. You add <code>PROP == &lt;&gt;[](minutes = 0)</code> (<code>&lt;&gt;[]</code> means <code>eventually always</code>) to module and proceed to model check. <code>TLA+</code> model checker points out that temporal formula is not satisfiable and gives counterexample system behavior - which stutters infinitely after counting down to <code>1</code>.</p>
+<p><img src="system-behavior4.png" /></p>
+<p>We will look into how to avoid this but for now let’s explore why stuttering steps are enforced in <code>TLA+</code>.</p>
+<h3 id="why-stuttering-steps-are-enforced">Why stuttering steps are enforced ?</h3>
+<p><code>TLA+</code> makes it easy to specify systems hierarchically. Suppose we have hierarchy of specifications <span class="math inline">\(S_1\)</span>, <span class="math inline">\(S_2\)</span>, … , <span class="math inline">\(S_n\)</span> of a system where <span class="math inline">\(S_1\)</span> is high level specification and <span class="math inline">\(S_n\)</span> is low level specification. To connect between them we need to verify that <span class="math inline">\(S_n\)</span> is correct implementation (low level details) of high level specification <span class="math inline">\(S_1\)</span>. This is done by showing that <span class="math inline">\(S_2\)</span> is refinement of <span class="math inline">\(S_1\)</span>, <span class="math inline">\(S_3\)</span> is refinement of <span class="math inline">\(S_2\)</span> so on.</p>
+<p>Let’s look at concept of refinement through an example. Suppose you implemented Timer counting seconds.</p>
+<pre><code>-------------------------------- MODULE TIMER2 -------------------------------------
+
+EXTENDS Naturals
+
+VARIABLE minutes, seconds
+
+CHECK == /\ /\ seconds \in (0..59) 
+            /\ minutes \in (0..5)
+         /\ minutes = 0 =&gt; seconds = 0
+
+INIT == minutes = 5 /\ seconds = 0
+
+DECRMINUTES == 
+    /\ seconds = 59
+    /\ minutes&#39; = minutes - 1
+    /\ seconds&#39; = 0
+
+INCRSECONDS ==
+    /\ minutes &gt; 0
+    /\ seconds &lt; 59
+    /\ seconds&#39; = seconds + 1
+    /\ minutes&#39; = minutes
+
+NEXT == \/ DECRMINUTES
+        \/ INCRSECONDS
+        \/ /\ minutes = 0
+           /\ minutes&#39; = minutes
+           /\ seconds&#39; = seconds
+
+SPEC == INIT /\ [][NEXT]_&lt;&lt;minutes, seconds&gt;&gt;
+
+====================================================================================</code></pre>
+<p>To verify that <code>TIMER2</code> is refinement of <code>TIMER</code> we add following definition in <code>TIMER2</code> module and model check that <code>SPECIFICAION SPEC</code> implies <code>PROPERTY RSPEC</code>.</p>
+<pre><code>RTIMER == INSTANCE TIMER
+RSPEC == RTIMER!SPEC</code></pre>
+<p><code>TLA+</code> model checker validates refinement as success. Part of why refinement worked out without any ceremony is <code>TLA+</code> insisted about stuttering steps in high level specification. Through refinement we want to show that for every system behavior of <code>TIMER2</code> there is corresponding system behavior of <code>TIMER</code> which can be shown by converting <code>INCRSECONDS</code> to stuttering steps of high level specification and hiding state of <code>seconds</code> (see illustrations).</p>
+<p><img src="system-behavior5.png" /> <img src="system-behavior6.png" /></p>
+<h3 id="how-to-verify-temporal-formula">How to verify temporal formula ?</h3>
+<p>We say that system behaves not as specified by <code>INIT /\ [][NEXT]_&lt;&lt;minutes&gt;&gt;</code> but with a modification - there can be finite but arbitrary large number of stuttering steps. <code>WF_minutes(NEXT)</code> is one of ways of enforcing this - It is always case that if <code>NEXT</code> is enabled (system can take <code>NEXT</code> step) forever then <code>NEXT</code> must eventually happen.</p>
+<p>We change system specification to <code>SPEC == INIT /\ [][NEXT]_&lt;&lt;minutes&gt;&gt; /\ WF_minutes(NEXT)</code> and model check <code>PROP</code> again. This time it succeeds.</p>
+</body>
+</html>
