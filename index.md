@@ -1,4 +1,8 @@
 # Blogs
+
+### September 2023
+- [Drawing hat tiling using Racket](https://rdivyanshu.github.io/hat.html)
+
 ### August 2023
 - [Stuttering Steps and Temporal Formulas in TLA+](https://rdivyanshu.github.io/temporal.html)
 
