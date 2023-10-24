@@ -1,5 +1,8 @@
 # Blogs
 
+### October 2023
+- [Under the hood of Rosette](https://rdivyanshu.github.io/rosette-internal.html)
+
 ### September 2023
 - [Drawing hat tiling using Racket](https://rdivyanshu.github.io/hat.html)
 
