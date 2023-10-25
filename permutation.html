@@ -5,15 +5,21 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <title>Another verified program in Dafny</title>
-  <style type="text/css">
-      code{white-space: pre-wrap;}
-      span.smallcaps{font-variant: small-caps;}
-      span.underline{text-decoration: underline;}
-      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
   </style>
   <link rel="stylesheet" href="./styling.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
 </head>
 <body>
+<p> <a href="index.html"> ↫ Home </a> </p>
 <h1 id="another-verified-program-in-dafny">Another verified program in Dafny</h1>
 <p>Permutations of multiset can be generated in lexicographical order. Wikipedia has description of how such <a href="https://en.wikipedia.org/wiki/Permutation#Generation_in_lexicographic_order">algorithm</a> works. Let’s implement <code>next_permutation</code> in Dafny which given array as input returns next permutation. Fun and challenging part of implementing in Dafny is verification.</p>
 <p>First we need to identify whether two arrays (sequences) are permutation of each other.</p>

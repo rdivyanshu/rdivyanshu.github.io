@@ -1,24 +1,24 @@
 # Blogs
 
 ### October 2023
-- [Under the hood of Rosette](https://rdivyanshu.github.io/rosette-internal.html)
+- [Under the hood of Rosette](./rosette-internal.html)
 
 ### September 2023
-- [Drawing hat tiling using Racket](https://rdivyanshu.github.io/hat.html)
+- [Drawing hat tiling using Racket](./hat.html)
 
 ### August 2023
-- [Stuttering Steps and Temporal Formulas in TLA+](https://rdivyanshu.github.io/temporal.html)
+- [Stuttering Steps and Temporal Formulas in TLA+](./temporal.html)
 
 ### July 2023
-- [Encoding Hitori in Answer Set Programming](https://rdivyanshu.github.io/asp.html)
+- [Encoding Hitori in Answer Set Programming](./asp.html)
 
 ### April 2023
-- [Another verified program in Dafny](https://rdivyanshu.github.io/permutation.html)
-- [A bit on Quantile Sketching](https://rdivyanshu.github.io/histogram.html) 
+- [Another verified program in Dafny](./permutation.html)
+- [A bit on Quantile Sketching](./histogram.html) 
 
 ### July 2021
-- [A verified program in Dafny](https://rdivyanshu.github.io/dafny.html) 
+- [A verified program in Dafny](./dafny.html) 
 
 ### June 2021
-- [Solving  a mathemattic problem using Rosette](https://rdivyanshu.github.io/ma122.html)
+- [Solving  a mathemattic problem using Rosette](./ma122.html)
 

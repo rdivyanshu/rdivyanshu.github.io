@@ -5,16 +5,21 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <title>Stuttering Steps and Temporal Formulas in TLA+</title>
-  <style type="text/css">
-      code{white-space: pre-wrap;}
-      span.smallcaps{font-variant: small-caps;}
-      span.underline{text-decoration: underline;}
-      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
   </style>
   <link rel="stylesheet" href="./styling.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS_CHTML-full" type="text/javascript"></script>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
 </head>
 <body>
+<p> <a href="index.html"> ↫ Home </a> </p>
 <h1 id="stuttering-steps-and-temporal-formulas-in-tla">Stuttering Steps and Temporal Formulas in TLA+</h1>
 <p>Let’s say you want to specify Timer in <code>TLA+</code> which counts down <code>5</code> minutes of time.</p>
 <pre><code>---------------------------------MODULE TIMER --------------------------------------
@@ -42,7 +47,7 @@ SPEC == INIT /\ [][NEXT]_&lt;&lt;minutes&gt;&gt;
 <p><img src="system-behavior4.png" /></p>
 <p>We will look into how to avoid this but for now let’s explore why stuttering steps are enforced in <code>TLA+</code>.</p>
 <h3 id="why-stuttering-steps-are-enforced">Why stuttering steps are enforced ?</h3>
-<p><code>TLA+</code> makes it easy to specify systems hierarchically. Suppose we have hierarchy of specifications <span class="math inline">\(S_1\)</span>, <span class="math inline">\(S_2\)</span>, … , <span class="math inline">\(S_n\)</span> of a system where <span class="math inline">\(S_1\)</span> is high level specification and <span class="math inline">\(S_n\)</span> is low level specification. To connect between them we need to verify that <span class="math inline">\(S_n\)</span> is correct implementation (low level details) of high level specification <span class="math inline">\(S_1\)</span>. This is done by showing that <span class="math inline">\(S_2\)</span> is refinement of <span class="math inline">\(S_1\)</span>, <span class="math inline">\(S_3\)</span> is refinement of <span class="math inline">\(S_2\)</span> so on.</p>
+<p><code>TLA+</code> makes it easy to specify systems hierarchically. Suppose we have hierarchy of specifications <span class="math inline"><em>S</em><sub>1</sub></span>, <span class="math inline"><em>S</em><sub>2</sub></span>, … , <span class="math inline"><em>S</em><sub><em>n</em></sub></span> of a system where <span class="math inline"><em>S</em><sub>1</sub></span> is high level specification and <span class="math inline"><em>S</em><sub><em>n</em></sub></span> is low level specification. To connect between them we need to verify that <span class="math inline"><em>S</em><sub><em>n</em></sub></span> is correct implementation (low level details) of high level specification <span class="math inline"><em>S</em><sub>1</sub></span>. This is done by showing that <span class="math inline"><em>S</em><sub>2</sub></span> is refinement of <span class="math inline"><em>S</em><sub>1</sub></span>, <span class="math inline"><em>S</em><sub>3</sub></span> is refinement of <span class="math inline"><em>S</em><sub>2</sub></span> so on.</p>
 <p>Let’s look at concept of refinement through an example. Suppose you implemented Timer counting seconds.</p>
 <pre><code>-------------------------------- MODULE TIMER2 -------------------------------------
 

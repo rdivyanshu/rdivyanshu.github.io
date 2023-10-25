@@ -5,15 +5,21 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <title>A verified program in Dafny</title>
-  <style type="text/css">
-      code{white-space: pre-wrap;}
-      span.smallcaps{font-variant: small-caps;}
-      span.underline{text-decoration: underline;}
-      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
   </style>
   <link rel="stylesheet" href="./styling.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
 </head>
 <body>
+<p> <a href="index.html"> ↫ Home </a> </p>
 <h1 id="a-verified-program-in-dafny">A verified program in Dafny</h1>
 <p>In this we will implement and verify solution of two sum problem. Two sum problem asks for a pair of indices in sorted sequence such that elements at those indices add up to given sum. It is given that such indices exists. Linear time implementation uses classic <a href="https://usaco.guide/silver/2P">two pointers technique</a>.</p>
 <p>We will be using dafny for implementation and verification. Below is translation of <a href="https://rosettacode.org/wiki/Two_sum">solution</a> in dafny.</p>

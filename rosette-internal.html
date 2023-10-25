@@ -14,8 +14,12 @@
     ul.task-list{list-style: none;}
   </style>
   <link rel="stylesheet" href="./styling.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
 </head>
 <body>
+<p> <a href="index.html"> ↫ Home </a> </p>
 <h1 id="under-the-hood-of-rosette">Under the hood of Rosette</h1>
 <p>Rosette is a solver-aided language. Its <a href="https://docs.racket-lang.org/rosette-guide/index.html">documentation</a> has good overview of how it can be used. It has been used to <a href="https://github.com/uw-unsat/jitterbug">find bug in eBPF</a>, <a href="https://medium.com/@uwdb/introducing-cosette-527898504bd6">reasoning about SQL equivalence</a> and in <a href="https://emina.github.io/rosette/apps.html">many other ways</a>. I have covered Rosette <a href="https://rdivyanshu.github.io/ma122.html">previously</a> in this blog by using it to solve a puzzle. Rosette is implemented in Racket which has extensive support for building programming languages. In this blog, we will try to peek into how Rosette works through following code.</p>
 <pre><code>#lang rosette/safe

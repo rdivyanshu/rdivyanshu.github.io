@@ -5,15 +5,21 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <title>Solving a mathemattic problem using Rosette</title>
-  <style type="text/css">
-      code{white-space: pre-wrap;}
-      span.smallcaps{font-variant: small-caps;}
-      span.underline{text-decoration: underline;}
-      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
   </style>
   <link rel="stylesheet" href="./styling.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
 </head>
 <body>
+<p> <a href="index.html"> ↫ Home </a> </p>
 <h1 id="solving-a-mathemattic-problem-using-rosette">Solving a mathemattic problem using Rosette</h1>
 <p>Would n’t it be interesting if programming language is aided with SMT solvers. <a href="https://docs.racket-lang.org/rosette-guide/index.html">Rosette</a> is such language. Using SMT solvers Rosette can <a href="https://docs.racket-lang.org/rosette-guide/ch_essentials.html#%28part._sec~3averify%29">verify</a> that programs comply their specifications, <a href="https://docs.racket-lang.org/rosette-guide/ch_essentials.html#%28part._sec~3asynthesize%29">synthesis</a> programs given specifications, find counter examples when program doesn’t meet its specification and <a href="https://docs.racket-lang.org/rosette-guide/ch_essentials.html#%28part._sec~3asolve%29">solve puzzles</a>.</p>
 <p>In this blogpost, I will be using Rosette to solve a puzzle which is taken from <a href="https://cms.math.ca/wp-content/uploads/2021/06/CRUXv47n5-b.pdf">Crux Volume 47, Issue 5</a>.</p>
