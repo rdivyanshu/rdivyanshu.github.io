@@ -1,5 +1,8 @@
 # Blogs
 
+### November 2023
+- [Uncovering ghouls using Answer Set Programming](./haunted.html)
+
 ### October 2023
 - [Under the hood of Rosette](./rosette-internal.html)
 
