@@ -1,5 +1,8 @@
 # Blogs
 
+### January 2024
+- [Verifying using temporal logic of action in Dafny](./tla-logic-in-dafny.html)
+
 ### November 2023
 - [Uncovering ghouls using Answer Set Programming](./haunted.html)
 

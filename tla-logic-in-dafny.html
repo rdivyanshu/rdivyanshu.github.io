@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Verifying using temporal logic of action in Dafny</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+  </style>
+  <link rel="stylesheet" href="./styling.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<p> <a href="index.html"> ↫ Home </a> </p>
+<h1 id="verifying-using-temporal-logic-of-action-in-dafny">Verifying using temporal logic of action in Dafny</h1>
+<p>In <a href="https://rdivyanshu.github.io/temporal.html">previous blog</a> we looked into why TLA+ specification enforces SI (stuttering insensitivity) and how verifying liveness assertion required us to add fairness condition in spec. In this blog we will model timer displaying minute in Dafny using temporal logic of action. And then we will prove that specifiction, with fairness condition included, implies that timer will eventually reach 0 (In previous blog we model checked this property).</p>
+<p>First order of bussiness is encode state of our system, specify what it is correct initial state and how system moves from one state to another. We need to be mindful that our action satistifes stuttering insensitivity requirement of temporal logic of action. Formally step <code>st</code> is enabled in state <code>s</code> if there exists state <code>e</code> such that <code>st(s, e)</code> is true. There is easlier way to say so for DecreaseMin step that is min is greater than 0.</p>
+<pre><code>datatype State = State(min: int)
+
+predicate Init(s: State){
+  s.min == 5
+}
+
+predicate EnabledDecreaseMin(s: State){
+  s.min &gt; 0
+}
+
+predicate DecreaseMin(s: State, t: State){
+  EnabledDecreaseMin(s) &amp;&amp; s.min - 1 == t.min
+}
+
+predicate Stutter(s: State, t: State){
+  s.min == t.min
+}
+
+predicate Next(s: State, t: State){
+  DecreaseMin(s, t) || Stutter(s, t)
+}</code></pre>
+<p>TLA+ avoids explicit mention of index of state in behavior. In Dafny we will be using infinite map <code>imap</code> to model behavior where value at key <code>n</code> is <code>nth</code> state. That is why we have additional requirement in spec that every natural number exists in map. Next we want DecreaseMin step to be weakly fair. I am using definition from Chapter 8 of Specifying Systems where it is defined to be <code>[]([](Enabled &lt;A&gt;_v) =&gt; &lt;&gt;&lt;A&gt;_v)</code>. Step <code>st</code> is weakly fair if <code>st</code> is enabled forever then eventually <code>st</code> will happen. There are alternate ways to say step is weakly fair, equivalent to this definition. Some triggers are mentioned in code below which helps SMT solvers to use quantifiers in guided manner but can be ignored for this discussion.</p>
+<pre><code>function Increase(i: nat): nat {
+  i+1
+}
+
+ghost predicate WeakFairness(t: imap&lt;nat, State&gt;)
+  requires forall i : nat :: i in t
+{
+   forall i: nat {:trigger EnabledDecreaseMin(t[i])} :: (
+      (forall j: nat :: j &gt;= i ==&gt; EnabledDecreaseMin(t[j]))
+      ==&gt;
+      (exists k: nat :: k &gt;= i &amp;&amp; DecreaseMin(t[k], t[Increase(k)]))
+   )
+}
+
+function Identity(n: nat) : nat {
+  n
+}
+
+ghost predicate Spec(t: imap&lt;nat, State&gt;){
+   (forall i : nat :: i in t)
+ &amp;&amp; Init(t[0])
+ &amp;&amp; (forall i : nat {:trigger Identity(i)}:: Next(t[i], t[i+1]))
+ &amp;&amp; WeakFairness(t)
+}</code></pre>
+<p>We need two safety properties to prove liveness property. First is <code>min</code> is always greater than or equal to 0. And second is <code>min</code> is non increasing in behavior. I have omitted proof but it can be seen <a href="https://gist.github.com/rdivyanshu/f2b0a03c6ceeb7659ec6bf9db91e3c86">here</a>.</p>
+<pre><code>lemma Safety(t: imap&lt;nat, State&gt;, k: nat)
+  requires Spec(t)
+  ensures t[k].min &gt;= 0
+
+
+lemma SafetyDecreasing(t: imap&lt;nat, State&gt;, m: nat, n: nat)
+  requires Spec(t)
+  requires m &lt;= n
+  ensures t[m].min &gt;= t[n].min</code></pre>
+<p>To prove that timer will eventually reach 0 we start with initial state and try to convince Dafny that we can always find state <code>m</code> (I am using index of state as synonyms for that state) in which <code>min</code> is 0. There are two cases to consider a) when antecedent of weak fairness is true and b) when it is false. In second case antecedant being false means there exists state <code>k</code> at which <code>min</code> is less than or equal to 0 which together with safety condition proves that <code>min</code> is exactly 0. In first case applying antecedent to weakly fair property gives us state <code>k</code> at which next transition will decreases <code>min</code>. Note that it just says that <code>min</code> will decrease between state <code>k</code> and <code>k+1</code>. It is required that current state <code>r</code> has <code>min</code> value greater than or equal to <code>min</code> of state <code>k</code> to prove that <code>min</code> actually decreases during our search. This is done using safety property <code>SafetyDecreasing</code>. Since <code>min</code> is finite positive number applying this argument again and again we will reach state <code>m</code> where <code>min</code> is 0.</p>
+<pre><code>lemma ExistsHelperLemma(t: imap&lt;nat, State&gt;, m: nat)
+  requires forall i : nat :: i in t
+  requires !(forall j : nat :: j &gt;= m ==&gt; EnabledDecreaseMin(t[j]))
+  ensures exists k : nat :: k &gt;= m &amp;&amp; !EnabledDecreaseMin(t[k])
+{}
+
+lemma Eventually(t: imap&lt;nat, State&gt;)
+  requires Spec(t)
+  ensures exists m : nat :: t[m].min == 0
+{
+   var r : nat := 0;
+   while t[r].min &gt; 0
+    invariant t[r].min &gt;= 0
+    decreases t[r].min
+   {
+     if(forall j : nat :: j &gt;= r ==&gt; EnabledDecreaseMin(t[j])) {
+        assert exists k: nat :: k &gt;= r &amp;&amp; DecreaseMin(t[k], t[Increase(k)]) by {
+          assert r == Identity(r);
+          assert EnabledDecreaseMin(t[r]);
+          assert
+            (forall j : nat :: j &gt;= r ==&gt; EnabledDecreaseMin(t[j])) ==&gt;
+            (exists k: nat :: k &gt;= r &amp;&amp; DecreaseMin(t[k], t[Increase(k)]));
+        }
+        var k :| k &gt;= r &amp;&amp; DecreaseMin(t[k], t[Increase(k)]);
+        assert Increase(k) == k + 1;
+        SafetyDecreasing(t, r, k);
+        assert t[r].min &gt;= t[k].min;
+        assert t[k+1].min == t[k].min - 1;
+        assert t[r].min &gt;= t[k].min &gt; t[k+1].min;
+        r := k + 1;
+        if t[r].min == 0 { return; }
+     }
+     else {
+        assert !(forall j : nat :: j &gt;= r ==&gt; EnabledDecreaseMin(t[j]));
+        ExistsHelperLemma(t, r);
+        var k :| k &gt;= r &amp;&amp; !EnabledDecreaseMin(t[k]);
+        assert t[k].min &lt;= 0;
+        Safety(t, k);
+        return;
+     }
+   }
+}</code></pre>
+<p>There is alternate way to think about this proof. When does timer will never reach state where <code>min</code> is 0 assuming safety part of spec (<code>Init</code> and <code>Next</code>) ? It is when timer stops working when <code>min</code> is displaying some number greater than 0 - behavior stutters infinitely afterwards. Does our spec include such behavior? In this behavior weakly fair condition allows us to find sequence of states in which <code>min</code> is decreasing to 0. But this is contradiction. Hence such behavior is not statisfied by our Spec.</p>
+<p>This is rather silly example to show temporal logic argument - there is no two or more processes/servers competing for fair execution. But I hope this small example which is written in programming language like syntax shows how such argument works.</p>
+</body>
+</html>
