@@ -104,7 +104,7 @@ method next_permutation(arr: array<nat>)
 One of favourite saying from [Developing Verified Programs in Dafny](https://leino.science/papers/krml233.pdf) is 
 - How strong or weak to make a specification is an engineering choice—a trade-off between assurance and the price to obtain 
 that assurance. We want to prove third postcondition. So let's pay the price - providing argument with enough details 
-that computer can accept it. Convicing will require lines of code as large as initial implementation, as Dafny can't figure 
+that computer can accept it. Convincing will require lines of code as large as initial implementation, as Dafny can't figure 
 out details like it did for first two postconditions.
 
 Few observations that will help latter : 
