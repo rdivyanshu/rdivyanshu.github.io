@@ -1,5 +1,8 @@
 # Blogs
 
+### May 2024
+- [A Formalization in Lean](./lean.html)
+
 ### January 2024
 - [Verifying using temporal logic of action in Dafny](./tla-logic-in-dafny.html)
 
