@@ -1,3 +1,6 @@
+    Title: Solving a mathemattic problem using Rosette
+    Date: 2021-06
+
 # Solving a mathemattic problem using Rosette
 
 Would n't it be interesting if programming language is aided with SMT solvers. [Rosette](https://docs.racket-lang.org/rosette-guide/index.html) is such language.

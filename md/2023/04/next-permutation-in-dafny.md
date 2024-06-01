@@ -1,3 +1,6 @@
+    Title: Another verified program in Dafny
+    Date: 2023-04
+
 # Another verified program in Dafny
 
 Permutations of multiset can be generated in lexicographical order. Wikipedia has description

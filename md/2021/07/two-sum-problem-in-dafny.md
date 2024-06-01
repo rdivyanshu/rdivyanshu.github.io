@@ -1,3 +1,6 @@
+    Title: A verified program in Dafny
+    Date: 2021-07
+
 # A verified program in Dafny
 In this we will implement and verify solution of two sum problem. Two sum problem asks for a pair of indices in sorted sequence such that elements at those indices add up to given sum. It is given that such indices exists. Linear time implementation uses classic [two pointers technique](https://usaco.guide/silver/2P).
 
