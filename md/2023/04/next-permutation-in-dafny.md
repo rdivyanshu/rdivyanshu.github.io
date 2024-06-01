@@ -1,7 +1,6 @@
-    Title: Another verified program in Dafny
-    Date: 2023-04
-
-# Another verified program in Dafny
+---   
+title: Another verified program in Dafny
+---
 
 Permutations of multiset can be generated in lexicographical order. Wikipedia has description
 of how such [algorithm](https://en.wikipedia.org/wiki/Permutation#Generation_in_lexicographic_order) works. 
@@ -10,18 +9,18 @@ Fun and challenging part of implementing in Dafny is verification.
 
 First we need to identify whether two arrays (sequences) are permutation of each other.
 
-```
+~~~{.dafny}
 predicate permutation(m: seq<nat>, n: seq<nat>)
 {
   && |m| == |n| 
   && multiset(m[..]) == multiset(n[..])
 }
-```
+~~~
 
 We also need to figure out lexicographical order of sequences - `(greater m n)` is 
 true when n is lexicographically greater than m.
 
-```
+~~~{.dafny}
 predicate greater(m: seq<nat>, n: seq<nat>)
   requires |m| == |n|
 {
@@ -29,7 +28,7 @@ predicate greater(m: seq<nat>, n: seq<nat>)
      && (forall i :: 0 <= i < j ==> m[i] == n[i]) 
      && m[j] < n[j]
 }
-```
+~~~
 
 With setup being done, let's write interface of `next_permutation`. If input is largest
 permutation then we can't find next permutation. It is captured by first postcondition
@@ -40,14 +39,14 @@ enforces that if there is another sequence `m` such that `m` is permutation of `
 than `arr` then either it is equal to `res` or `m` is greater than `res`. This inforces that `res` 
 is next permutation.
 
-```
+~~~{.dafny}
 method next_permutation(arr: array<nat>)
   returns (ok: bool, res: array<nat>)
   ensures !ok ==> decreasing(arr[..])
   ensures ok ==> permutation(arr[..], res[..]) && greater(arr[..], res[..])
   ensures ok ==> forall m :: permutation(arr[..], m) && greater(arr[..], m) ==>
                   greater(res[..], m) || (res[..] == m)
-```
+~~~
 
 Proving last postcondition will be hardest so let's ignore this for now. Code listed
 below is implementation of algorithm on Wikipedia with few invariants thrown below
@@ -56,7 +55,7 @@ which it obliges. We needed one additional lemma `identity_permutation` and impl
 of `copy` and `reverse` methods with exhaustive postconditions. Implemenation of which can be
 seen [here](https://gist.github.com/rdivyanshu/c7ced3c3ff2bfc9c3cc38b2cae6609f0) in final verified program.
 
-```
+~~~{.dafny}
 method next_permutation(arr: array<nat>)
   returns (ok: bool, res: array<nat>)
   ensures !ok ==> decreasing(arr[..])
@@ -102,7 +101,7 @@ method next_permutation(arr: array<nat>)
 
   ok := true;
 }
-```
+~~~
 
 One of favourite saying from [Developing Verified Programs in Dafny](https://leino.science/papers/krml233.pdf) is 
 - How strong or weak to make a specification is an engineering choice—a trade-off between assurance and the price to obtain 
@@ -121,7 +120,7 @@ Few observations that will help latter :
 Adding assert statement makes Dafny prove last observation which it does without any help. Second statement in code snippet below
 is [calculation](https://cseweb.ucsd.edu/~npolikarpova/publications/vstte13.pdf) proof to establish obvious fact.
 
-```
+~~~{.dafny}
   assert increasing(res[i..]);
   calc {
     multiset(arr[(i-1)..]);
@@ -132,7 +131,7 @@ is [calculation](https://cseweb.ucsd.edu/~npolikarpova/publications/vstte13.pdf)
     { assert res[..] == res[..(i-1)] + res[(i-1)..]; }
     multiset(res[(i-1)..]);
   }
-```
+~~~
 
 Complete proof of third postcodition is listed below. Proof uses case analysis on index used in `greater` predicate.
 There are three cases to consider. If `k` is less than `i-1` then `arr[..k] == res[..k]` and `arr[k] == res[k]`.
@@ -141,7 +140,7 @@ It is easy to prove `greater(res, m)` from these facts. In fact Dafny is able to
 Since `arr[k..]` is decreasing sequence `m[k]` should be less or equal to `arr[k]`, first element of sequence. Starting 
 with assumption `arr[k]` is less than `m[k]` we proved that `m[k]` is less or equal to `arr[k]`, a contradiction.
 
-```
+~~~{.dafny}
 forall m | permutation(arr[..], m) && greater(arr[..], m) ensures
     greater(res[..], m) || (res[..] == m)
   {
@@ -210,7 +209,7 @@ forall m | permutation(arr[..], m) && greater(arr[..], m) ensures
       }
     }
   }
-```
+~~~
 
 Finally we arrive at case when `k` is equal `i-1`. It requires further case analysis. If `m[k]` is equal to 
 `res[k]` then `multiset(m[(k+1)..])` is equal to `multiset(res[(k+1)..])`. By using 
