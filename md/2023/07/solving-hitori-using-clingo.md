@@ -1,4 +1,6 @@
-# Encoding Hitori in Answer Set Programming
+---   
+title: Encoding Hitori in Answer Set Programming
+---
 
 [Hitori](https://www.nikoli.co.jp/en/puzzles/hitori/) is logic puzzle with goal to black out some cells such that
 
@@ -29,10 +31,12 @@ Finally directives are statements starting with `#`. They allow constants to be 
 output to be controlled using `#show prime/1`.
 
 First step to solve Hitori is declaring no number appears twice in row or column in solution.
-```
+
+~~~{.default}
 1 { blacked(X, Y1); blacked(X, Y2) } 2 :- written(X, Y1, N), written(X, Y2, N), Y1 < Y2.
 1 { blacked(X1, Y); blacked(X2, Y) } 2 :- written(X1, Y, N), written(X2, Y, N), X1 < X2.
-```
+~~~
+
 Body part (part after `:-`) is enabled when same number is written in same row (first rule) /
 same column (second rule) twice. Head part (part before `:-`) states that one of occurrence should be
 blacked out or both. This is achieved using choice rule. Choice rule is of form `{ A; B; C }` which states
@@ -41,16 +45,17 @@ and after set then size of subset should be greater or equal to before number an
 number. `{ A; B; C } = N` means `N { A; B; C } N`.
 
 Blacked out cells are not neighbors can be expressed using following constraints.
-```
+
+~~~{.default}
 :- blacked(X, Y), blacked(X + 1, Y).
 :- blacked(X, Y), blacked(X, Y + 1).
-```
+~~~
 
 Finally to guarantee non blacked out cells are part of single connected component, we select one of non
 blacked out cell and start doing breadth first search - adding discovered cells in `reachable` relation.
 All non blacked out cells should be reachable.
 
-```
+~~~{.default}
 { start(X, Y) : written(X, Y, _), not blacked(X, Y) } = 1.
 reachable(X, Y) :- start(X, Y).
 reachable(X + 1, Y) :- reachable(X, Y), written(X + 1, Y, _), not blacked(X + 1, Y).
@@ -60,18 +65,17 @@ reachable(X, Y - 1) :- reachable(X, Y), written(X, Y - 1, _), not blacked(X, Y -
 
 :- written(X, Y, _), not blacked(X, Y), not reachable(X, Y).
 
-```
+~~~
 
 Finally we add `#show blacked/2` to display blacked cells. Let's now try out our encoding on
 instance of Hitori which is shown below. 
-![](./hitori.png)
+![](../../../img/hitori.png)
 
 Running below program using [clingo](https://potassco.org/clingo/) outputs which cells need to
 colored black (shown above). `written(X, Y, N)` relation means
 there is number `N` written at row `X` and column `Y`.
 
-
-```
+~~~{.default}
 written(1, 1, 1). written(1, 2, 1). written(1, 3, 2).
 written(1, 4, 4). written(1, 5, 3). written(1, 6, 5).
 written(2, 1, 1). written(2, 2, 1). written(2, 3, 5).
@@ -101,7 +105,6 @@ reachable(X, Y - 1) :- reachable(X, Y), written(X, Y - 1, _), not blacked(X, Y -
 :- written(X, Y, _), not blacked(X, Y), not reachable(X, Y).
 
 #show blacked/2.
-
-```
+~~~
 
 

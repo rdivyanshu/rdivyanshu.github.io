@@ -2,7 +2,7 @@
 title: A bit on Quantile Sketching
 ---
 
-As part of production monitoring it is standard practice to measure`p95`, `p99` latencies. We also want to query
+As part of production monitoring it is standard practice to measure `p95`, `p99` latencies. We also want to query
 these metrics over dynamic time range. What is `p99` latency over last `3` hours? What is `p99` latency over last `5` minutes?
 
 One option is calculate quantiles at client using [statsite](https://github.com/statsite/statsite) which will calculate 
