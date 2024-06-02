@@ -2,7 +2,7 @@
 title: Verifying using temporal logic of action in Dafny 
 ---
 
-In [previous blog](../../2023/08/stuttering-steps-in-tla+.md) we looked into why TLA+ specification enforces SI (stuttering insensitivity) and 
+In [previous blog](../../2023/08/stuttering-steps-in-tla.html) we looked into why TLA+ specification enforces SI (stuttering insensitivity) and 
 how verifying liveness assertion required us to add fairness condition in spec. In this blog
 we will model timer displaying minute in Dafny using temporal logic of action. And then
 we will prove that specifiction, with fairness condition included, implies that timer will eventually

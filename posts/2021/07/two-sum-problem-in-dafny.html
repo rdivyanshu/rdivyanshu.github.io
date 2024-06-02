@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>A verified program in Dafny</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        background-color: #ffffff;
+        color: #a0a0a0;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #a0a0a0;  padding-left: 4px; }
+    div.sourceCode
+      { color: #1f1c1b;  }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span { color: #1f1c1b; } /* Normal */
+    code span.al { color: #bf0303; background-color: #f7e6e6; font-weight: bold; } /* Alert */
+    code span.an { color: #ca60ca; } /* Annotation */
+    code span.at { color: #0057ae; } /* Attribute */
+    code span.bn { color: #b08000; } /* BaseN */
+    code span.bu { color: #644a9b; font-weight: bold; } /* BuiltIn */
+    code span.cf { color: #1f1c1b; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #924c9d; } /* Char */
+    code span.cn { color: #aa5500; } /* Constant */
+    code span.co { color: #898887; } /* Comment */
+    code span.cv { color: #0095ff; } /* CommentVar */
+    code span.do { color: #607880; } /* Documentation */
+    code span.dt { color: #0057ae; } /* DataType */
+    code span.dv { color: #1f1c1b; } /* DecVal */
+    code span.er { color: #bf0303; text-decoration: underline; } /* Error */
+    code span.ex { color: #4379a0; font-weight: bold; } /* Extension */
+    code span.fl { color: #b08000; } /* Float */
+    code span.fu { color: #644a9b; } /* Function */
+    code span.im { color: #ff5500; } /* Import */
+    code span.in { color: #b08000; } /* Information */
+    code span.kw { color: #1f1c1b; font-weight: bold; } /* Keyword */
+    code span.op { color: #1f1c1b; } /* Operator */
+    code span.ot { color: #1d2482; } /* Other */
+    code span.pp { color: #006e28; } /* Preprocessor */
+    code span.re { color: #0057ae; background-color: #e0e9f8; } /* RegionMarker */
+    code span.sc { color: #3daee9; } /* SpecialChar */
+    code span.ss { color: #ff5500; } /* SpecialString */
+    code span.st { color: #bf0303; } /* String */
+    code span.va { color: #1f1c1b; } /* Variable */
+    code span.vs { color: #bf0303; } /* VerbatimString */
+    code span.wa { color: #bf0303; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="../../../style.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<p> <a href="../../../index.html"> ↫ Home </a> </p>
+<header id="title-block-header">
+<h1 class="title">A verified program in Dafny</h1>
+</header>
+<p>In this we will implement and verify solution of two sum problem. Two
+sum problem asks for a pair of indices in sorted sequence such that
+elements at those indices add up to given sum. It is given that such
+indices exists. Linear time implementation uses classic <a
+href="https://usaco.guide/silver/2P">two pointers technique</a>.</p>
+<p>We will be using dafny for implementation and verification. Below is
+translation of <a
+href="https://rosettacode.org/wiki/Two_sum">solution</a> in dafny.</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode dafny"><code class="sourceCode dafny"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">method</span> <span class="va">find_indices</span> <span class="op">(</span><span class="va">s</span><span class="op">:</span> <span class="dt">seq&lt;int&gt;</span><span class="op">,</span> <span class="va">sm</span><span class="op">:</span> <span class="dt">int</span><span class="op">)</span> </span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a> <span class="kw">returns</span> <span class="op">(</span><span class="va">i</span><span class="op">:</span> <span class="dt">int</span><span class="op">,</span> <span class="va">j</span><span class="op">:</span> <span class="dt">int</span><span class="op">)</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="va">i</span> <span class="op">:</span>= <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="va">j</span> <span class="op">:</span>= <span class="op">|</span><span class="va">s</span><span class="op">|</span> <span class="op">-</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">while</span> <span class="va">i</span> <span class="op">&lt;</span> <span class="va">j</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="op">{</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span><span class="va">s</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">+</span> <span class="va">s</span><span class="op">[</span><span class="va">j</span><span class="op">]</span> <span class="op">&lt;</span> <span class="va">sm</span><span class="op">){</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>      <span class="va">i</span> <span class="op">:</span>= <span class="va">i</span> <span class="op">+</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="va">s</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">+</span> <span class="va">s</span><span class="op">[</span><span class="va">j</span><span class="op">]</span> <span class="op">&gt;</span> <span class="va">sm</span><span class="op">){</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>      <span class="va">j</span> <span class="op">:</span>= <span class="va">j</span> <span class="op">-</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    <span class="kw">else</span> <span class="op">{</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>      <span class="kw">return</span> <span class="va">i</span><span class="op">,</span> <span class="va">j</span><span class="op">;</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>If you run above code snippet using <a
+href="https://dafny.org/">Dafny</a>, you will notice following
+verification errors.</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode dafny"><code class="sourceCode dafny"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="va">twosum</span><span class="op">.</span><span class="va">dfy</span><span class="op">(</span><span class="dv">8</span><span class="op">,</span><span class="dv">8</span><span class="op">):</span> <span class="va">Error</span><span class="op">:</span> <span class="va">index</span> <span class="va">out</span> <span class="va">of</span> <span class="va">range</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="dv">8</span> <span class="op">|</span>     <span class="kw">if</span> <span class="op">(</span><span class="va">s</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">+</span> <span class="va">s</span><span class="op">[</span><span class="va">j</span><span class="op">]</span> <span class="op">&lt;</span> <span class="va">sm</span><span class="op">){</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span>         ^^^^</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="va">twosum</span><span class="op">.</span><span class="va">dfy</span><span class="op">(</span><span class="dv">8</span><span class="op">,</span><span class="dv">15</span><span class="op">):</span> <span class="va">Error</span><span class="op">:</span> <span class="va">index</span> <span class="va">out</span> <span class="va">of</span> <span class="va">range</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="dv">8</span> <span class="op">|</span>     <span class="kw">if</span> <span class="op">(</span><span class="va">s</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">+</span> <span class="va">s</span><span class="op">[</span><span class="va">j</span><span class="op">]</span> <span class="op">&lt;</span> <span class="va">sm</span><span class="op">){</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span>                ^^^^</span></code></pre></div>
+<p>It happens because dafny can’t verify that sequence access is within
+its bounds. Let’s fix this by providing loop invariant - predicate which
+is true when loop starts and after every iteration of loop including
+last run.</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode dafny"><code class="sourceCode dafny"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">method</span> <span class="va">find_indices</span> <span class="op">(</span><span class="va">s</span><span class="op">:</span> <span class="dt">seq&lt;int&gt;</span><span class="op">,</span> <span class="va">sm</span><span class="op">:</span> <span class="dt">int</span><span class="op">)</span> </span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a> <span class="kw">returns</span> <span class="op">(</span><span class="va">i</span><span class="op">:</span> <span class="dt">int</span><span class="op">,</span> <span class="va">j</span><span class="op">:</span> <span class="dt">int</span><span class="op">)</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="va">i</span> <span class="op">:</span>= <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="va">j</span> <span class="op">:</span>= <span class="op">|</span><span class="va">s</span><span class="op">|</span> <span class="op">-</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">while</span> <span class="va">i</span> <span class="op">&lt;</span> <span class="va">j</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>     <span class="ot">invariant</span> <span class="dv">0</span> <span class="op">&lt;=</span> <span class="va">i</span> <span class="op">&lt;=</span> <span class="va">j</span> <span class="op">&lt;</span> <span class="op">|</span><span class="va">s</span><span class="op">|</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="op">{</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span><span class="va">s</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">+</span> <span class="va">s</span><span class="op">[</span><span class="va">j</span><span class="op">]</span> <span class="op">&lt;</span> <span class="va">sm</span><span class="op">){</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>      <span class="va">i</span> <span class="op">:</span>= <span class="va">i</span> <span class="op">+</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="va">s</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">+</span> <span class="va">s</span><span class="op">[</span><span class="va">j</span><span class="op">]</span> <span class="op">&gt;</span> <span class="va">sm</span><span class="op">){</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>      <span class="va">j</span> <span class="op">:</span>= <span class="va">j</span> <span class="op">-</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">else</span> <span class="op">{</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>      <span class="kw">return</span> <span class="va">i</span><span class="op">,</span> <span class="va">j</span><span class="op">;</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>Notice invariant says <code>i &lt;= j</code> where as loop condition
+is <code>i &lt; j</code> . This is due to loop invariant should be true
+after last run of loop. After last run of loop <code>i</code> is equal
+to <code>j</code>. If you run above code snippet it will give
+verification error still reproduced below.</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode dafny"><code class="sourceCode dafny"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="va">twosum</span><span class="op">.</span><span class="va">dfy</span><span class="op">(</span><span class="dv">7</span><span class="op">,</span><span class="dv">19</span><span class="op">):</span> <span class="va">Error</span><span class="op">:</span> <span class="va">This</span> <span class="va">loop</span> <span class="ot">invariant</span> <span class="va">might</span> <span class="va">not</span> <span class="va">hold</span> <span class="va">on</span> <span class="va">entry</span><span class="op">.</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dv">7</span> <span class="op">|</span>     <span class="ot">invariant</span> <span class="dv">0</span> <span class="op">&lt;=</span> <span class="va">i</span> <span class="op">&lt;=</span> <span class="va">j</span> <span class="op">&lt;</span> <span class="op">|</span><span class="va">s</span><span class="op">|</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span>                    ^^^^^^</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="va">twosum</span><span class="op">.</span><span class="va">dfy</span><span class="op">(</span><span class="dv">7</span><span class="op">,</span><span class="dv">19</span><span class="op">):</span> <span class="va">Related</span> <span class="va">message</span><span class="op">:</span> <span class="va">loop</span> <span class="ot">invariant</span> <span class="va">violation</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="dv">7</span> <span class="op">|</span>     <span class="ot">invariant</span> <span class="dv">0</span> <span class="op">&lt;=</span> <span class="va">i</span> <span class="op">&lt;=</span> <span class="va">j</span> <span class="op">&lt;</span> <span class="op">|</span><span class="va">s</span><span class="op">|</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span>                    ^^^^^^</span></code></pre></div>
+<p>Loop invariant is not maintained at start if sequence is empty. To
+fix it temporarily you can add <code>requires |s| &gt;= 1</code> .</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode dafny"><code class="sourceCode dafny"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">method</span> <span class="va">find_indices</span> <span class="op">(</span><span class="va">s</span><span class="op">:</span> <span class="dt">seq&lt;int&gt;</span><span class="op">,</span> <span class="va">sm</span><span class="op">:</span> <span class="dt">int</span><span class="op">)</span> </span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a> <span class="kw">returns</span> <span class="op">(</span><span class="va">i</span><span class="op">:</span> <span class="dt">int</span><span class="op">,</span> <span class="va">j</span><span class="op">:</span> <span class="dt">int</span><span class="op">)</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a> <span class="ot">requires</span> <span class="op">|</span><span class="va">s</span><span class="op">|</span> <span class="op">&gt;=</span> <span class="dv">1</span></span></code></pre></div>
+<p><code>requires</code> adds precondition to method.
+<code>find_indices</code> can now assume that sequence contains at least
+one element. You can’t call <code>find_indices</code> with empty
+sequence now as it violates its contracts.</p>
+<p>This brings us to preconditions of two sum problem</p>
+<ul>
+<li>Sequence is sorted</li>
+<li>There exists indices pair, whose elements add upto sum</li>
+</ul>
+<p>We need predicate which classifies whether sequence is sorted or
+not.</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode dafny"><code class="sourceCode dafny"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">predicate</span> <span class="va">sorted</span> <span class="op">(</span><span class="va">s</span><span class="op">:</span> <span class="dt">seq&lt;int&gt;</span><span class="op">)</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">if</span> <span class="op">|</span><span class="va">s</span><span class="op">|</span> <span class="op">&lt;=</span> <span class="dv">1</span> <span class="kw">then</span> <span class="kw">true</span> <span class="kw">else</span> <span class="va">s</span><span class="op">[</span><span class="dv">0</span><span class="op">]</span> <span class="op">&lt;=</span> <span class="va">s</span><span class="op">[</span><span class="dv">1</span><span class="op">]</span> <span class="op">&amp;&amp;</span> <span class="va">sorted</span><span class="op">(</span><span class="va">s</span><span class="op">[</span><span class="dv">1</span><span class="op">..])</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>After defining sorted predicate, let’s add all preconditions to
+<code>find_indices</code> method.</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode dafny"><code class="sourceCode dafny"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">method</span> <span class="va">find_indices</span> <span class="op">(</span><span class="va">s</span><span class="op">:</span> <span class="dt">seq&lt;int&gt;</span><span class="op">,</span> <span class="va">sm</span><span class="op">:</span> <span class="dt">int</span><span class="op">)</span> </span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a> <span class="kw">returns</span> <span class="op">(</span><span class="va">i</span><span class="op">:</span> <span class="dt">int</span><span class="op">,</span> <span class="va">j</span><span class="op">:</span> <span class="dt">int</span><span class="op">)</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a> <span class="ot">requires</span> <span class="va">sorted</span><span class="op">(</span><span class="va">s</span><span class="op">)</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a> <span class="ot">requires</span> <span class="kw">exists</span> <span class="va">m</span><span class="op">,</span> <span class="va">n</span> <span class="op">::</span> <span class="dv">0</span> <span class="op">&lt;=</span> <span class="va">m</span> <span class="op">&lt;</span> <span class="va">n</span> <span class="op">&lt;</span> <span class="op">|</span><span class="va">s</span><span class="op">|</span> <span class="op">&amp;&amp;</span> <span class="va">s</span><span class="op">[</span><span class="va">m</span><span class="op">]</span> <span class="op">+</span> <span class="va">s</span><span class="op">[</span><span class="va">n</span><span class="op">]</span> == <span class="va">sm</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="va">i</span> <span class="op">:</span>= <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="va">j</span> <span class="op">:</span>= <span class="op">|</span><span class="va">s</span><span class="op">|</span> <span class="op">-</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="kw">while</span> <span class="va">i</span> <span class="op">&lt;</span> <span class="va">j</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>     <span class="ot">invariant</span> <span class="dv">0</span> <span class="op">&lt;=</span> <span class="va">i</span> <span class="op">&lt;=</span> <span class="va">j</span> <span class="op">&lt;</span> <span class="op">|</span><span class="va">s</span><span class="op">|</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="op">{</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span><span class="va">s</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">+</span> <span class="va">s</span><span class="op">[</span><span class="va">j</span><span class="op">]</span> <span class="op">&lt;</span> <span class="va">sm</span><span class="op">){</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>      <span class="va">i</span> <span class="op">:</span>= <span class="va">i</span> <span class="op">+</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="va">s</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">+</span> <span class="va">s</span><span class="op">[</span><span class="va">j</span><span class="op">]</span> <span class="op">&gt;</span> <span class="va">sm</span><span class="op">){</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>      <span class="va">j</span> <span class="op">:</span>= <span class="va">j</span> <span class="op">-</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    <span class="kw">else</span> <span class="op">{</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>      <span class="kw">return</span> <span class="va">i</span><span class="op">,</span> <span class="va">j</span><span class="op">;</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>This is runnable and verifiable. But it does n’t say anything about
+returned indices. We need contract attached to <code>find_indices</code>
+that it returns right indices. Using <code>ensures</code>, we can do
+exactly that. It adds postcondition to method - predicates which must
+hold when method returns. Let’s add what we intended to return.</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode dafny"><code class="sourceCode dafny"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">method</span> <span class="va">find_indices</span> <span class="op">(</span><span class="va">s</span><span class="op">:</span> <span class="dt">seq&lt;int&gt;</span><span class="op">,</span> <span class="va">sm</span><span class="op">:</span> <span class="dt">int</span><span class="op">)</span> </span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a> <span class="kw">returns</span> <span class="op">(</span><span class="va">i</span><span class="op">:</span> <span class="dt">int</span><span class="op">,</span> <span class="va">j</span><span class="op">:</span> <span class="dt">int</span><span class="op">)</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a> <span class="ot">requires</span> <span class="va">sorted</span><span class="op">(</span><span class="va">s</span><span class="op">)</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a> <span class="ot">requires</span> <span class="kw">exists</span> <span class="va">m</span><span class="op">,</span> <span class="va">n</span> <span class="op">::</span> <span class="dv">0</span> <span class="op">&lt;=</span> <span class="va">m</span> <span class="op">&lt;</span> <span class="va">n</span> <span class="op">&lt;</span> <span class="op">|</span><span class="va">s</span><span class="op">|</span> <span class="op">&amp;&amp;</span> <span class="va">s</span><span class="op">[</span><span class="va">m</span><span class="op">]</span> <span class="op">+</span> <span class="va">s</span><span class="op">[</span><span class="va">n</span><span class="op">]</span> == <span class="va">sm</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a> <span class="ot">ensures</span> <span class="dv">0</span> <span class="op">&lt;=</span> <span class="va">i</span> <span class="op">&lt;</span> <span class="va">j</span> <span class="op">&lt;</span> <span class="op">|</span><span class="va">s</span><span class="op">|</span> <span class="op">&amp;&amp;</span> <span class="va">s</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">+</span> <span class="va">s</span><span class="op">[</span><span class="va">j</span><span class="op">]</span> == <span class="va">sm</span></span></code></pre></div>
+<p>If you verify after adding postcondition, it will throw verification
+error. Dafny can’t prove postcondition by itself, we need to guide dafny
+to verify that.</p>
+<p>Before verifying postcondition, we need to take little detour to
+prove small lemma which will be required later.</p>
+<p>Lemma - Given sorted sequence <code>s</code> and two indices
+<code>m</code>, <code>n</code> such that <code>m &lt;= n</code> then
+<code>s[m] &lt;= s[n]</code>.</p>
+<p>Translation of lemma in dafny and its verification is given in code
+snippet below. Proof uses induction on <code>m</code>, <code>n</code>,
+with difference between <code>n</code> and <code>m</code> decreasing
+when relying on inductive argument. If <code>m == n</code> then
+<code>s[m] &lt;= s[n]</code> else using induction we know that
+<code>m + 1 &lt;= n</code> implies <code>s[m+1] &lt;= s[n]</code> which
+together with <code>s[m] &lt;= s[m+1]</code> will prove
+<code>s[m] &lt;= s[n]</code>.</p>
+<p>We need to fetch information <code>s[m] &lt;= s[m+1]</code> from
+sorted predicate. <code>sorted(s[m..])</code> implies
+<code>s[m] &lt;= s[m+1]</code> by definition. Stating
+<code>sorted(s[m..])</code> holds requires iterative argument which is
+done by <code>while</code> loop.</p>
+<ul>
+<li><code>sorted(s)</code> implies (by definition)</li>
+<li><code>sorted(s[1..])</code> implies (by definition)</li>
+<li><code>sorted(s[2..])</code> implies (by definition)</li>
+<li><code>....</code><br />
+</li>
+<li><code>sorted(s[m..])</code></li>
+</ul>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode dafny"><code class="sourceCode dafny"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">lemma</span> <span class="at">{:induction</span> <span class="va">m</span><span class="op">,</span> <span class="va">n</span><span class="op">}</span> <span class="va">sorted_elem_lemma</span><span class="op">(</span><span class="va">s</span><span class="op">:</span> <span class="dt">seq&lt;int&gt;</span><span class="op">,</span> <span class="va">m</span><span class="op">:</span> <span class="dt">int</span><span class="op">,</span> <span class="va">n</span><span class="op">:</span> <span class="dt">int</span><span class="op">)</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a> <span class="ot">decreases</span> <span class="va">n</span> <span class="op">-</span> <span class="va">m</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a> <span class="ot">requires</span> <span class="va">sorted</span><span class="op">(</span><span class="va">s</span><span class="op">)</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a> <span class="ot">requires</span> <span class="dv">0</span> <span class="op">&lt;=</span> <span class="va">m</span> <span class="op">&lt;=</span> <span class="va">n</span> <span class="op">&lt;</span> <span class="op">|</span><span class="va">s</span><span class="op">|</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a> <span class="ot">ensures</span> <span class="va">s</span><span class="op">[</span><span class="va">m</span><span class="op">]</span> <span class="op">&lt;=</span> <span class="va">s</span><span class="op">[</span><span class="va">n</span><span class="op">]</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">if</span><span class="op">(</span><span class="va">m</span> == <span class="va">n</span><span class="op">)</span> <span class="op">{}</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="kw">else</span> <span class="op">{</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="va">sorted_elem_lemma</span><span class="op">(</span><span class="va">s</span><span class="op">,</span> <span class="va">m</span><span class="op">+</span><span class="dv">1</span><span class="op">,</span> <span class="va">n</span><span class="op">);</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">var</span> <span class="va">i</span> <span class="op">:</span>= <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">while</span> <span class="va">i</span> <span class="op">&lt;</span> <span class="va">m</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>     <span class="ot">invariant</span> <span class="va">i</span> <span class="op">&lt;=</span> <span class="va">m</span> <span class="op">&lt;</span> <span class="op">|</span><span class="va">s</span><span class="op">|</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>     <span class="ot">invariant</span> <span class="va">sorted</span><span class="op">(</span><span class="va">s</span><span class="op">[</span><span class="va">i</span><span class="op">..])</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>      <span class="kw">if</span><span class="op">(</span> <span class="va">i</span> == <span class="dv">0</span> <span class="op">)</span> <span class="op">{}</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>      <span class="kw">else</span> <span class="op">{</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>        <span class="kw">assert</span> <span class="va">sorted</span><span class="op">(</span><span class="va">s</span><span class="op">[(</span><span class="va">i</span><span class="op">+</span><span class="dv">1</span><span class="op">)..]);</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>      <span class="op">}</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>      <span class="va">i</span> <span class="op">:</span>= <span class="va">i</span> <span class="op">+</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>With above lemma at hand, we can now prove postcondition holds.
+Addition invariants which are maintained by loop are</p>
+<ul>
+<li>pair of indices which add upto sum lies between loop variables</li>
+<li>for every pair of indices in which one of index lies outside loop
+variables does n’t add upto sum</li>
+</ul>
+<p>which is accomplished by following</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode dafny"><code class="sourceCode dafny"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="dv">1</span><span class="op">)</span> <span class="ot">invariant</span> <span class="kw">exists</span> <span class="va">m</span><span class="op">,</span> <span class="va">n</span> <span class="op">::</span> <span class="va">i</span> <span class="op">&lt;=</span> <span class="va">m</span> <span class="op">&lt;</span> <span class="va">n</span> <span class="op">&lt;=</span> <span class="va">j</span> <span class="op">&amp;&amp;</span> <span class="va">s</span><span class="op">[</span><span class="va">m</span><span class="op">]</span> <span class="op">+</span> <span class="va">s</span><span class="op">[</span><span class="va">n</span><span class="op">]</span> == <span class="va">sm</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="dv">2</span><span class="op">)</span> <span class="ot">invariant</span> <span class="kw">forall</span> <span class="va">m</span><span class="op">,</span> <span class="va">n</span> <span class="op">::</span> <span class="dv">0</span> <span class="op">&lt;=</span> <span class="va">m</span> <span class="op">&lt;</span> <span class="va">i</span> <span class="op">&amp;&amp;</span> <span class="va">m</span> <span class="op">&lt;</span> <span class="va">n</span> <span class="op">&lt;</span> <span class="op">|</span><span class="va">s</span><span class="op">|</span> <span class="op">==&gt;</span> <span class="va">s</span><span class="op">[</span><span class="va">m</span><span class="op">]</span> <span class="op">+</span> <span class="va">s</span><span class="op">[</span><span class="va">n</span><span class="op">]</span> <span class="op">!=</span> <span class="va">sm</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="dv">3</span><span class="op">)</span> <span class="ot">invariant</span> <span class="kw">forall</span> <span class="va">m</span><span class="op">,</span> <span class="va">n</span> <span class="op">::</span> <span class="va">j</span> <span class="op">&lt;</span> <span class="va">n</span> <span class="op">&lt;</span> <span class="op">|</span><span class="va">s</span><span class="op">|</span> <span class="op">&amp;&amp;</span> <span class="dv">0</span> <span class="op">&lt;=</span> <span class="va">m</span> <span class="op">&lt;</span> <span class="va">n</span> <span class="op">==&gt;</span> <span class="va">s</span><span class="op">[</span><span class="va">m</span><span class="op">]</span> <span class="op">+</span> <span class="va">s</span><span class="op">[</span><span class="va">n</span><span class="op">]</span> <span class="op">!=</span> <span class="va">sm</span></span></code></pre></div>
+<p>Let’s go through informal proof of how these invariants are
+maintained by <code>while</code> body. We will follow example when we
+increase <code>i</code> by <code>1</code>, case when we decrease
+<code>j</code> by <code>1</code> is similar. Assume that before running
+<code>while</code> body array looks like this and we want to increase
+<code>i</code> by 1.</p>
+<p><img src="./../../../img/array.png" /></p>
+<p>To prove second invariant is still being maintained we need to prove
+that sum of element at brown background with any other at non-white
+background is not equal to <code>sm</code>. Notice that case when other
+element is at yellow background is already covered by third invariant.
+For gray background case, sum with last such element is less than
+<code>sm</code>. Since array is sorted, sum of element at brown
+background and any other element at gray background should also be less
+than <code>sm</code>.</p>
+<p><img src="./../../../img/array_viz.png" /></p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode dafny"><code class="sourceCode dafny"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">method</span> <span class="va">find_indices</span> <span class="op">(</span><span class="va">s</span><span class="op">:</span> <span class="dt">seq&lt;int&gt;</span><span class="op">,</span> <span class="va">sm</span><span class="op">:</span> <span class="dt">int</span><span class="op">)</span> <span class="kw">returns</span> <span class="op">(</span><span class="va">i</span><span class="op">:</span> <span class="dt">int</span><span class="op">,</span> <span class="va">j</span><span class="op">:</span> <span class="dt">int</span><span class="op">)</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="ot">requires</span> <span class="va">sorted</span><span class="op">(</span><span class="va">s</span><span class="op">)</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="ot">requires</span> <span class="kw">exists</span> <span class="va">m</span><span class="op">,</span> <span class="va">n</span> <span class="op">::</span> <span class="dv">0</span> <span class="op">&lt;=</span> <span class="va">m</span> <span class="op">&lt;</span> <span class="va">n</span> <span class="op">&lt;</span> <span class="op">|</span><span class="va">s</span><span class="op">|</span> <span class="op">&amp;&amp;</span> <span class="va">s</span><span class="op">[</span><span class="va">m</span><span class="op">]</span> <span class="op">+</span> <span class="va">s</span><span class="op">[</span><span class="va">n</span><span class="op">]</span> == <span class="va">sm</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="ot">ensures</span> <span class="dv">0</span> <span class="op">&lt;=</span> <span class="va">i</span> <span class="op">&lt;</span> <span class="va">j</span> <span class="op">&lt;</span> <span class="op">|</span><span class="va">s</span><span class="op">|</span> <span class="op">&amp;&amp;</span> <span class="va">s</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">+</span> <span class="va">s</span><span class="op">[</span><span class="va">j</span><span class="op">]</span> == <span class="va">sm</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="va">i</span> <span class="op">:</span>= <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="va">j</span> <span class="op">:</span>= <span class="op">|</span><span class="va">s</span><span class="op">|</span> <span class="op">-</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>  <span class="kw">while</span> <span class="va">i</span> <span class="op">&lt;</span> <span class="va">j</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    <span class="ot">invariant</span> <span class="dv">0</span> <span class="op">&lt;=</span> <span class="va">i</span> <span class="op">&lt;=</span> <span class="va">j</span> <span class="op">&lt;</span> <span class="op">|</span><span class="va">s</span><span class="op">|</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    <span class="ot">invariant</span> <span class="kw">exists</span> <span class="va">m</span><span class="op">,</span> <span class="va">n</span> <span class="op">::</span> <span class="va">i</span> <span class="op">&lt;=</span> <span class="va">m</span> <span class="op">&lt;</span> <span class="va">n</span> <span class="op">&lt;=</span> <span class="va">j</span> <span class="op">&amp;&amp;</span> <span class="va">s</span><span class="op">[</span><span class="va">m</span><span class="op">]</span> <span class="op">+</span> <span class="va">s</span><span class="op">[</span><span class="va">n</span><span class="op">]</span> == <span class="va">sm</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    <span class="ot">invariant</span> <span class="kw">forall</span> <span class="va">m</span><span class="op">,</span> <span class="va">n</span> <span class="op">::</span> <span class="dv">0</span> <span class="op">&lt;=</span> <span class="va">m</span> <span class="op">&lt;</span> <span class="va">i</span> <span class="op">&amp;&amp;</span> <span class="va">m</span> <span class="op">&lt;</span> <span class="va">n</span> <span class="op">&lt;</span> <span class="op">|</span><span class="va">s</span><span class="op">|</span> <span class="op">==&gt;</span> <span class="va">s</span><span class="op">[</span><span class="va">m</span><span class="op">]</span> <span class="op">+</span> <span class="va">s</span><span class="op">[</span><span class="va">n</span><span class="op">]</span> <span class="op">!=</span> <span class="va">sm</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    <span class="ot">invariant</span> <span class="kw">forall</span> <span class="va">m</span><span class="op">,</span> <span class="va">n</span> <span class="op">::</span> <span class="va">j</span> <span class="op">&lt;</span> <span class="va">n</span> <span class="op">&lt;</span> <span class="op">|</span><span class="va">s</span><span class="op">|</span> <span class="op">&amp;&amp;</span> <span class="dv">0</span> <span class="op">&lt;=</span> <span class="va">m</span> <span class="op">&lt;</span> <span class="va">n</span> <span class="op">==&gt;</span> <span class="va">s</span><span class="op">[</span><span class="va">m</span><span class="op">]</span> <span class="op">+</span> <span class="va">s</span><span class="op">[</span><span class="va">n</span><span class="op">]</span> <span class="op">!=</span> <span class="va">sm</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>  <span class="op">{</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span><span class="va">s</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">+</span> <span class="va">s</span><span class="op">[</span><span class="va">j</span><span class="op">]</span> <span class="op">&lt;</span> <span class="va">sm</span><span class="op">){</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>      <span class="kw">forall</span> <span class="va">k</span> <span class="op">|</span> <span class="va">i</span> <span class="op">&lt;</span> <span class="va">k</span> <span class="op">&lt;</span> <span class="op">|</span><span class="va">s</span><span class="op">|</span> <span class="ot">ensures</span> <span class="va">s</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">+</span> <span class="va">s</span><span class="op">[</span><span class="va">k</span><span class="op">]</span> <span class="op">!=</span> <span class="va">sm</span> <span class="op">{</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> <span class="va">k</span> <span class="op">&lt;=</span> <span class="va">j</span> <span class="op">{</span></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>          <span class="va">sorted_elem_lemma</span><span class="op">(</span><span class="va">s</span><span class="op">,</span> <span class="va">k</span><span class="op">,</span> <span class="va">j</span><span class="op">);</span></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>          <span class="kw">assert</span> <span class="va">s</span><span class="op">[</span><span class="va">k</span><span class="op">]</span> <span class="op">&lt;=</span> <span class="va">s</span><span class="op">[</span><span class="va">j</span><span class="op">];</span></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>          <span class="kw">assert</span> <span class="va">s</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">+</span> <span class="va">s</span><span class="op">[</span><span class="va">k</span><span class="op">]</span> <span class="op">&lt;=</span> <span class="va">s</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">+</span> <span class="va">s</span><span class="op">[</span><span class="va">j</span><span class="op">];</span></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>      <span class="op">}</span></span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>      <span class="va">i</span> <span class="op">:</span>= <span class="va">i</span> <span class="op">+</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>    <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="va">s</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">+</span> <span class="va">s</span><span class="op">[</span><span class="va">j</span><span class="op">]</span> <span class="op">&gt;</span> <span class="va">sm</span><span class="op">){</span></span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>      <span class="kw">forall</span> <span class="va">k</span> <span class="op">|</span> <span class="dv">0</span> <span class="op">&lt;=</span> <span class="va">k</span> <span class="op">&lt;</span> <span class="va">j</span> <span class="ot">ensures</span> <span class="va">s</span><span class="op">[</span><span class="va">k</span><span class="op">]</span> <span class="op">+</span> <span class="va">s</span><span class="op">[</span><span class="va">j</span><span class="op">]</span> <span class="op">!=</span> <span class="va">sm</span> <span class="op">{</span></span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> <span class="va">i</span> <span class="op">&lt;=</span> <span class="va">k</span> <span class="op">{</span></span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>          <span class="va">sorted_elem_lemma</span><span class="op">(</span><span class="va">s</span><span class="op">,</span> <span class="va">i</span><span class="op">,</span> <span class="va">k</span><span class="op">);</span></span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>          <span class="kw">assert</span> <span class="va">s</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">&lt;=</span> <span class="va">s</span><span class="op">[</span><span class="va">k</span><span class="op">];</span></span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>          <span class="kw">assert</span> <span class="va">s</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">+</span> <span class="va">s</span><span class="op">[</span><span class="va">j</span><span class="op">]</span> <span class="op">&lt;=</span> <span class="va">s</span><span class="op">[</span><span class="va">k</span><span class="op">]</span> <span class="op">+</span> <span class="va">s</span><span class="op">[</span><span class="va">j</span><span class="op">];</span></span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a>      <span class="op">}</span></span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a>      <span class="va">j</span> <span class="op">:</span>= <span class="va">j</span> <span class="op">-</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a>    <span class="kw">else</span> <span class="op">{</span></span>
+<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a>      <span class="kw">return</span> <span class="va">i</span><span class="op">,</span> <span class="va">j</span><span class="op">;</span></span>
+<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>Complete source code can be found <a
+href="https://gist.github.com/rdivyanshu/052fc8b2c5bb62fc33c3065d42b2ad81">here</a>.</p>
+</body>
+</html>

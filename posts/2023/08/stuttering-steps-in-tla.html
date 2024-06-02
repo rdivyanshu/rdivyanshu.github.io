@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Stuttering Steps and Temporal Formulas in TLA+</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        background-color: #ffffff;
+        color: #a0a0a0;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #a0a0a0;  padding-left: 4px; }
+    div.sourceCode
+      { color: #1f1c1b;  }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span { color: #1f1c1b; } /* Normal */
+    code span.al { color: #bf0303; background-color: #f7e6e6; font-weight: bold; } /* Alert */
+    code span.an { color: #ca60ca; } /* Annotation */
+    code span.at { color: #0057ae; } /* Attribute */
+    code span.bn { color: #b08000; } /* BaseN */
+    code span.bu { color: #644a9b; font-weight: bold; } /* BuiltIn */
+    code span.cf { color: #1f1c1b; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #924c9d; } /* Char */
+    code span.cn { color: #aa5500; } /* Constant */
+    code span.co { color: #898887; } /* Comment */
+    code span.cv { color: #0095ff; } /* CommentVar */
+    code span.do { color: #607880; } /* Documentation */
+    code span.dt { color: #0057ae; } /* DataType */
+    code span.dv { color: #1f1c1b; } /* DecVal */
+    code span.er { color: #bf0303; text-decoration: underline; } /* Error */
+    code span.ex { color: #4379a0; font-weight: bold; } /* Extension */
+    code span.fl { color: #b08000; } /* Float */
+    code span.fu { color: #644a9b; } /* Function */
+    code span.im { color: #ff5500; } /* Import */
+    code span.in { color: #b08000; } /* Information */
+    code span.kw { color: #1f1c1b; font-weight: bold; } /* Keyword */
+    code span.op { color: #1f1c1b; } /* Operator */
+    code span.ot { color: #1d2482; } /* Other */
+    code span.pp { color: #006e28; } /* Preprocessor */
+    code span.re { color: #0057ae; background-color: #e0e9f8; } /* RegionMarker */
+    code span.sc { color: #3daee9; } /* SpecialChar */
+    code span.ss { color: #ff5500; } /* SpecialString */
+    code span.st { color: #bf0303; } /* String */
+    code span.va { color: #1f1c1b; } /* Variable */
+    code span.vs { color: #bf0303; } /* VerbatimString */
+    code span.wa { color: #bf0303; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="../../../style.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<p> <a href="../../../index.html"> ↫ Home </a> </p>
+<header id="title-block-header">
+<h1 class="title">Stuttering Steps and Temporal Formulas in TLA+</h1>
+</header>
+<p>Let’s say you want to specify Timer in <code>TLA+</code> which counts
+down <code>5</code> minutes of time.</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode default"><code class="sourceCode default"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>---------------------------------MODULE TIMER --------------------------------------</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>EXTENDS Naturals</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>VARIABLE minutes</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>CHECK == minutes \in (0..5)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>INIT == minutes = 5</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>NEXT == IF minutes &gt; 0 </span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>           THEN minutes&#39; = minutes - 1</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>           ELSE minutes&#39; = minutes</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>SPEC == INIT /\ [][NEXT]_&lt;&lt;minutes&gt;&gt;</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>====================================================================================</span></code></pre></div>
+<p>Code listed above shows <code>TLA+</code> specification for the same,
+assuming you want minutes to decrease by <code>1</code> in single step
+until it reaches <code>0</code>. Ideally you want <code>SPEC</code> to
+be <code>INIT /\ []NEXT</code> representing system behavior as shown in
+figure.</p>
+<p><img src="../../../img/system-behavior1.png" /></p>
+<p>But alas <code>TLA+</code> doesn’t allow it. It requires you to
+account for stuttering steps which forces you to change
+<code>SPEC</code> to
+<code>INIT /\ [][NEXT]_&lt;&lt;minutes&gt;&gt;</code>. Some of system
+behavior satisfying <code>SPEC</code> is shown below.</p>
+<p><img src="../../../img/system-behavior1.png" /> <img
+src="../../../img/system-behavior2.png" /> <img
+src="../../../img/system-behavior3.png" /></p>
+<p>Next you want to check temporal formula (property) that
+<code>eventually</code> minutes will be 0 <code>always</code>. You add
+<code>PROP == &lt;&gt;[](minutes = 0)</code> (<code>&lt;&gt;[]</code>
+means <code>eventually always</code>) to module and proceed to model
+check. <code>TLA+</code> model checker points out that temporal formula
+is not satisfiable and gives counterexample system behavior - which
+stutters infinitely after counting down to <code>1</code>.</p>
+<p><img src="../../../img/system-behavior4.png" /></p>
+<p>We will look into how to avoid this but for now let’s explore why
+stuttering steps are enforced in <code>TLA+</code>.</p>
+<h3 id="why-stuttering-steps-are-enforced">Why stuttering steps are
+enforced ?</h3>
+<p><code>TLA+</code> makes it easy to specify systems hierarchically.
+Suppose we have hierarchy of specifications <span
+class="math inline"><em>S</em><sub>1</sub></span>, <span
+class="math inline"><em>S</em><sub>2</sub></span>, … , <span
+class="math inline"><em>S</em><sub><em>n</em></sub></span> of a system
+where <span class="math inline"><em>S</em><sub>1</sub></span> is high
+level specification and <span
+class="math inline"><em>S</em><sub><em>n</em></sub></span> is low level
+specification. To connect between them we need to verify that <span
+class="math inline"><em>S</em><sub><em>n</em></sub></span> is correct
+implementation (low level details) of high level specification <span
+class="math inline"><em>S</em><sub>1</sub></span>. This is done by
+showing that <span class="math inline"><em>S</em><sub>2</sub></span> is
+refinement of <span class="math inline"><em>S</em><sub>1</sub></span>,
+<span class="math inline"><em>S</em><sub>3</sub></span> is refinement of
+<span class="math inline"><em>S</em><sub>2</sub></span> so on.</p>
+<p>Let’s look at concept of refinement through an example. Suppose you
+implemented Timer counting seconds.</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode default"><code class="sourceCode default"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>-------------------------------- MODULE TIMER2 -------------------------------------</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>EXTENDS Naturals</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>VARIABLE minutes, seconds</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>CHECK == /\ /\ seconds \in (0..59) </span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>            /\ minutes \in (0..5)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>         /\ minutes = 0 =&gt; seconds = 0</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>INIT == minutes = 5 /\ seconds = 0</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>DECRMINUTES == </span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    /\ seconds = 59</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    /\ minutes&#39; = minutes - 1</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    /\ seconds&#39; = 0</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>INCRSECONDS ==</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    /\ minutes &gt; 0</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    /\ seconds &lt; 59</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>    /\ seconds&#39; = seconds + 1</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>    /\ minutes&#39; = minutes</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>NEXT == \/ DECRMINUTES</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>        \/ INCRSECONDS</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>        \/ /\ minutes = 0</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>           /\ minutes&#39; = minutes</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>           /\ seconds&#39; = seconds</span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>SPEC == INIT /\ [][NEXT]_&lt;&lt;minutes, seconds&gt;&gt;</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>====================================================================================</span></code></pre></div>
+<p>To verify that <code>TIMER2</code> is refinement of
+<code>TIMER</code> we add following definition in <code>TIMER2</code>
+module and model check that <code>SPECIFICAION SPEC</code> implies
+<code>PROPERTY RSPEC</code>.</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode default"><code class="sourceCode default"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>RTIMER == INSTANCE TIMER</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>RSPEC == RTIMER!SPEC</span></code></pre></div>
+<p><code>TLA+</code> model checker validates refinement as success. Part
+of why refinement worked out without any ceremony is <code>TLA+</code>
+insisted about stuttering steps in high level specification. Through
+refinement we want to show that for every system behavior of
+<code>TIMER2</code> there is corresponding system behavior of
+<code>TIMER</code> which can be shown by converting
+<code>INCRSECONDS</code> to stuttering steps of high level specification
+and hiding state of <code>seconds</code> (see illustrations).</p>
+<p><img src="../../../img/system-behavior5.png" /> <img
+src="../../../img/system-behavior6.png" /></p>
+<h3 id="how-to-verify-temporal-formula">How to verify temporal formula
+?</h3>
+<p>We say that system behaves not as specified by
+<code>INIT /\ [][NEXT]_&lt;&lt;minutes&gt;&gt;</code> but with a
+modification - there can be finite but arbitrary large number of
+stuttering steps. <code>WF_minutes(NEXT)</code> is one of ways of
+enforcing this - It is always case that if <code>NEXT</code> is enabled
+(system can take <code>NEXT</code> step) forever then <code>NEXT</code>
+must eventually happen.</p>
+<p>We change system specification to
+<code>SPEC == INIT /\ [][NEXT]_&lt;&lt;minutes&gt;&gt; /\ WF_minutes(NEXT)</code>
+and model check <code>PROP</code> again. This time it succeeds.</p>
+</body>
+</html>

@@ -4,7 +4,7 @@ title: Under the hood of Rosette
 
 Rosette is a solver-aided language. Its [documentation](https://docs.racket-lang.org/rosette-guide/index.html) has good overview of how it can
 be used. It has been used to [find bug in eBPF](https://github.com/uw-unsat/jitterbug), [reasoning about SQL equivalence](https://medium.com/@uwdb/introducing-cosette-527898504bd6)
-and in [many other ways](https://emina.github.io/rosette/apps.html). I have covered Rosette [previously](../../2021/06/crux-mathematicorum-ma122-rosette.md) in this blog by using it to solve a puzzle. Rosette is implemented
+and in [many other ways](https://emina.github.io/rosette/apps.html). I have covered Rosette [previously](../../2021/06/crux-mathematicorum-ma122-rosette.html) in this blog by using it to solve a puzzle. Rosette is implemented
 in Racket which has extensive support for building programming languages. In this blog, we will try to peek into how Rosette works through following code.
 
 ~~~{.racket}
