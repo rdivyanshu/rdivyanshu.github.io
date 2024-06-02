@@ -11,5 +11,12 @@ posts/%.html:
 	mkdir -p $(dir $@)
 	pandoc $(flags) $(patsubst posts/%.html, mds/%.md, $@) -o $@ 
 
+index:
+	pandoc -s -f markdown --to=html5 --css=style.css index.md -o index.html
+
 posts: $(htmls)
 
+.PHONY: clean
+
+clean:
+	rm -rf posts/ index.html
