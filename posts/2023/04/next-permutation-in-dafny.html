@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Another verified program in Dafny</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        background-color: #ffffff;
+        color: #a0a0a0;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #a0a0a0;  padding-left: 4px; }
+    div.sourceCode
+      { color: #1f1c1b;  }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span { color: #1f1c1b; } /* Normal */
+    code span.al { color: #bf0303; background-color: #f7e6e6; font-weight: bold; } /* Alert */
+    code span.an { color: #ca60ca; } /* Annotation */
+    code span.at { color: #0057ae; } /* Attribute */
+    code span.bn { color: #b08000; } /* BaseN */
+    code span.bu { color: #644a9b; font-weight: bold; } /* BuiltIn */
+    code span.cf { color: #1f1c1b; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #924c9d; } /* Char */
+    code span.cn { color: #aa5500; } /* Constant */
+    code span.co { color: #898887; } /* Comment */
+    code span.cv { color: #0095ff; } /* CommentVar */
+    code span.do { color: #607880; } /* Documentation */
+    code span.dt { color: #0057ae; } /* DataType */
+    code span.dv { color: #1f1c1b; } /* DecVal */
+    code span.er { color: #bf0303; text-decoration: underline; } /* Error */
+    code span.ex { color: #4379a0; font-weight: bold; } /* Extension */
+    code span.fl { color: #b08000; } /* Float */
+    code span.fu { color: #644a9b; } /* Function */
+    code span.im { color: #ff5500; } /* Import */
+    code span.in { color: #b08000; } /* Information */
+    code span.kw { color: #1f1c1b; font-weight: bold; } /* Keyword */
+    code span.op { color: #1f1c1b; } /* Operator */
+    code span.ot { color: #1d2482; } /* Other */
+    code span.pp { color: #006e28; } /* Preprocessor */
+    code span.re { color: #0057ae; background-color: #e0e9f8; } /* RegionMarker */
+    code span.sc { color: #3daee9; } /* SpecialChar */
+    code span.ss { color: #ff5500; } /* SpecialString */
+    code span.st { color: #bf0303; } /* String */
+    code span.va { color: #1f1c1b; } /* Variable */
+    code span.vs { color: #bf0303; } /* VerbatimString */
+    code span.wa { color: #bf0303; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="../../../style.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<p> <a href="../../../index.html"> ↫ Home </a> </p>
+<header id="title-block-header">
+<h1 class="title">Another verified program in Dafny</h1>
+</header>
+<p>Permutations of multiset can be generated in lexicographical order.
+Wikipedia has description of how such <a
+href="https://en.wikipedia.org/wiki/Permutation#Generation_in_lexicographic_order">algorithm</a>
+works. Let’s implement <code>next_permutation</code> in Dafny which
+given array as input returns next permutation. Fun and challenging part
+of implementing in Dafny is verification.</p>
+<p>First we need to identify whether two arrays (sequences) are
+permutation of each other.</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode dafny"><code class="sourceCode dafny"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">predicate</span> <span class="va">permutation</span><span class="op">(</span><span class="va">m</span><span class="op">:</span> <span class="dt">seq&lt;nat&gt;</span><span class="op">,</span> <span class="va">n</span><span class="op">:</span> <span class="dt">seq&lt;nat&gt;</span><span class="op">)</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="op">&amp;&amp;</span> <span class="op">|</span><span class="va">m</span><span class="op">|</span> == <span class="op">|</span><span class="va">n</span><span class="op">|</span> </span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="op">&amp;&amp;</span> <span class="dt">multiset</span><span class="op">(</span><span class="va">m</span><span class="op">[..])</span> == <span class="dt">multiset</span><span class="op">(</span><span class="va">n</span><span class="op">[..])</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>We also need to figure out lexicographical order of sequences -
+<code>(greater m n)</code> is true when n is lexicographically greater
+than m.</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode dafny"><code class="sourceCode dafny"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">predicate</span> <span class="va">greater</span><span class="op">(</span><span class="va">m</span><span class="op">:</span> <span class="dt">seq&lt;nat&gt;</span><span class="op">,</span> <span class="va">n</span><span class="op">:</span> <span class="dt">seq&lt;nat&gt;</span><span class="op">)</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="ot">requires</span> <span class="op">|</span><span class="va">m</span><span class="op">|</span> == <span class="op">|</span><span class="va">n</span><span class="op">|</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">exists</span> <span class="va">j</span> <span class="op">::</span> <span class="dv">0</span> <span class="op">&lt;=</span> <span class="va">j</span> <span class="op">&lt;</span> <span class="op">|</span><span class="va">m</span><span class="op">|</span> </span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>     <span class="op">&amp;&amp;</span> <span class="op">(</span><span class="kw">forall</span> <span class="va">i</span> <span class="op">::</span> <span class="dv">0</span> <span class="op">&lt;=</span> <span class="va">i</span> <span class="op">&lt;</span> <span class="va">j</span> <span class="op">==&gt;</span> <span class="va">m</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> == <span class="va">n</span><span class="op">[</span><span class="va">i</span><span class="op">])</span> </span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>     <span class="op">&amp;&amp;</span> <span class="va">m</span><span class="op">[</span><span class="va">j</span><span class="op">]</span> <span class="op">&lt;</span> <span class="va">n</span><span class="op">[</span><span class="va">j</span><span class="op">]</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>With setup being done, let’s write interface of
+<code>next_permutation</code>. If input is largest permutation then we
+can’t find next permutation. It is captured by first postcondition - if
+<code>ok</code> is false then there is no next permutation which happens
+when array is largest in lexicographical order (i.e. <code>arr</code> is
+decreasing sequence). Next postcondition says that array we return is
+indeed permutation of input and it is greater than input. Last
+postcondition enforces that if there is another sequence <code>m</code>
+such that <code>m</code> is permutation of <code>arr</code> and greater
+than <code>arr</code> then either it is equal to <code>res</code> or
+<code>m</code> is greater than <code>res</code>. This inforces that
+<code>res</code> is next permutation.</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode dafny"><code class="sourceCode dafny"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">method</span> <span class="va">next_permutation</span><span class="op">(</span><span class="va">arr</span><span class="op">:</span> <span class="dt">array</span><span class="op">&lt;</span><span class="dt">nat</span><span class="op">&gt;)</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">returns</span> <span class="op">(</span><span class="va">ok</span><span class="op">:</span> <span class="dt">bool</span><span class="op">,</span> <span class="va">res</span><span class="op">:</span> <span class="dt">array</span><span class="op">&lt;</span><span class="dt">nat</span><span class="op">&gt;)</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="ot">ensures</span> <span class="op">!</span><span class="va">ok</span> <span class="op">==&gt;</span> <span class="va">decreasing</span><span class="op">(</span><span class="va">arr</span><span class="op">[..])</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="ot">ensures</span> <span class="va">ok</span> <span class="op">==&gt;</span> <span class="va">permutation</span><span class="op">(</span><span class="va">arr</span><span class="op">[..],</span> <span class="va">res</span><span class="op">[..])</span> <span class="op">&amp;&amp;</span> <span class="va">greater</span><span class="op">(</span><span class="va">arr</span><span class="op">[..],</span> <span class="va">res</span><span class="op">[..])</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="ot">ensures</span> <span class="va">ok</span> <span class="op">==&gt;</span> <span class="kw">forall</span> <span class="va">m</span> <span class="op">::</span> <span class="va">permutation</span><span class="op">(</span><span class="va">arr</span><span class="op">[..],</span> <span class="va">m</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="va">greater</span><span class="op">(</span><span class="va">arr</span><span class="op">[..],</span> <span class="va">m</span><span class="op">)</span> <span class="op">==&gt;</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>                  <span class="va">greater</span><span class="op">(</span><span class="va">res</span><span class="op">[..],</span> <span class="va">m</span><span class="op">)</span> <span class="op">||</span> <span class="op">(</span><span class="va">res</span><span class="op">[..]</span> == <span class="va">m</span><span class="op">)</span></span></code></pre></div>
+<p>Proving last postcondition will be hardest so let’s ignore this for
+now. Code listed below is implementation of algorithm on Wikipedia with
+few invariants thrown below while loop. In the end of method we ask
+Dafny to prove postconditions for us which it obliges. We needed one
+additional lemma <code>identity_permutation</code> and implementation of
+<code>copy</code> and <code>reverse</code> methods with exhaustive
+postconditions. Implemenation of which can be seen <a
+href="https://gist.github.com/rdivyanshu/c7ced3c3ff2bfc9c3cc38b2cae6609f0">here</a>
+in final verified program.</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode dafny"><code class="sourceCode dafny"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">method</span> <span class="va">next_permutation</span><span class="op">(</span><span class="va">arr</span><span class="op">:</span> <span class="dt">array</span><span class="op">&lt;</span><span class="dt">nat</span><span class="op">&gt;)</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">returns</span> <span class="op">(</span><span class="va">ok</span><span class="op">:</span> <span class="dt">bool</span><span class="op">,</span> <span class="va">res</span><span class="op">:</span> <span class="dt">array</span><span class="op">&lt;</span><span class="dt">nat</span><span class="op">&gt;)</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="ot">ensures</span> <span class="op">!</span><span class="va">ok</span> <span class="op">==&gt;</span> <span class="va">decreasing</span><span class="op">(</span><span class="va">arr</span><span class="op">[..])</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="ot">ensures</span> <span class="va">ok</span> <span class="op">==&gt;</span> <span class="va">permutation</span><span class="op">(</span><span class="va">arr</span><span class="op">[..],</span> <span class="va">res</span><span class="op">[..])</span> <span class="op">&amp;&amp;</span> <span class="va">greater</span><span class="op">(</span><span class="va">arr</span><span class="op">[..],</span> <span class="va">res</span><span class="op">[..])</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="va">res</span> <span class="op">:</span>= <span class="kw">new</span> <span class="dt">nat</span><span class="op">[</span><span class="va">arr</span><span class="op">.</span><span class="va">Length</span><span class="op">];</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="va">copy</span><span class="op">(</span><span class="va">arr</span><span class="op">,</span> <span class="va">res</span><span class="op">);</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="kw">if</span> <span class="va">arr</span><span class="op">.</span><span class="va">Length</span> <span class="op">&lt;=</span> <span class="dv">0</span> <span class="op">{</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    <span class="va">ok</span> <span class="op">:</span>= <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">return</span><span class="op">;</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  <span class="kw">var</span> <span class="va">i</span> <span class="op">:</span>= <span class="va">arr</span><span class="op">.</span><span class="va">Length</span> <span class="op">-</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>  <span class="kw">while</span> <span class="va">i</span> <span class="op">&gt;</span> <span class="dv">0</span> <span class="op">&amp;&amp;</span> <span class="va">arr</span><span class="op">[</span><span class="va">i</span><span class="op">-</span><span class="dv">1</span><span class="op">]</span> <span class="op">&gt;=</span> <span class="va">arr</span><span class="op">[</span><span class="va">i</span><span class="op">]</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="ot">invariant</span> <span class="va">i</span> <span class="op">&gt;=</span> <span class="dv">0</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    <span class="ot">invariant</span> <span class="kw">forall</span> <span class="va">k</span> <span class="op">::</span> <span class="va">i</span> <span class="op">&lt;</span> <span class="va">k</span> <span class="op">&lt;</span> <span class="va">arr</span><span class="op">.</span><span class="va">Length</span> <span class="op">==&gt;</span> <span class="va">arr</span><span class="op">[</span><span class="va">k</span><span class="op">-</span><span class="dv">1</span><span class="op">]</span> <span class="op">&gt;=</span> <span class="va">arr</span><span class="op">[</span><span class="va">k</span><span class="op">]</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>  <span class="op">{</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    <span class="va">i</span> <span class="op">:</span>= <span class="va">i</span><span class="op">-</span><span class="dv">1</span><span class="op">;</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>  <span class="kw">if</span> <span class="va">i</span> <span class="op">&lt;=</span> <span class="dv">0</span> <span class="op">{</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    <span class="va">ok</span> <span class="op">:</span>= <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>    <span class="kw">return</span><span class="op">;</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>  <span class="kw">var</span> <span class="va">j</span> <span class="op">:</span>= <span class="va">arr</span><span class="op">.</span><span class="va">Length</span> <span class="op">-</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>  <span class="kw">while</span> <span class="va">arr</span><span class="op">[</span><span class="va">j</span><span class="op">]</span> <span class="op">&lt;=</span> <span class="va">arr</span><span class="op">[</span><span class="va">i</span><span class="op">-</span><span class="dv">1</span><span class="op">]</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    <span class="ot">decreases</span> <span class="va">j</span> <span class="op">-</span> <span class="va">i</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>    <span class="ot">invariant</span> <span class="va">j</span> <span class="op">&gt;=</span> <span class="va">i</span></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>    <span class="ot">invariant</span> <span class="kw">forall</span> <span class="va">k</span> <span class="op">::</span> <span class="va">j</span> <span class="op">&lt;</span> <span class="va">k</span> <span class="op">&lt;</span> <span class="va">arr</span><span class="op">.</span><span class="va">Length</span> <span class="op">==&gt;</span> <span class="va">arr</span><span class="op">[</span><span class="va">k</span><span class="op">]</span> <span class="op">&lt;=</span> <span class="va">arr</span><span class="op">[</span><span class="va">i</span><span class="op">-</span><span class="dv">1</span><span class="op">]</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>  <span class="op">{</span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>     <span class="va">j</span> <span class="op">:</span>= <span class="va">j</span> <span class="op">-</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>  <span class="va">identity_permutation</span><span class="op">(</span><span class="va">arr</span><span class="op">[..],</span> <span class="va">res</span><span class="op">[..]);</span></span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>  <span class="va">res</span><span class="op">[</span><span class="va">i</span><span class="op">-</span><span class="dv">1</span><span class="op">],</span> <span class="va">res</span><span class="op">[</span><span class="va">j</span><span class="op">]</span> <span class="op">:</span>= <span class="va">res</span><span class="op">[</span><span class="va">j</span><span class="op">],</span> <span class="va">res</span><span class="op">[</span><span class="va">i</span><span class="op">-</span><span class="dv">1</span><span class="op">];</span></span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>  <span class="va">reverse</span><span class="op">(</span><span class="va">res</span><span class="op">,</span> <span class="va">i</span><span class="op">,</span> <span class="va">res</span><span class="op">.</span><span class="va">Length</span><span class="op">-</span><span class="dv">1</span><span class="op">);</span></span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>  <span class="kw">assert</span> <span class="va">permutation</span><span class="op">(</span><span class="va">arr</span><span class="op">[..],</span> <span class="va">res</span><span class="op">[..]);</span></span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>  <span class="kw">assert</span> <span class="va">greater</span><span class="op">(</span><span class="va">arr</span><span class="op">[..],</span> <span class="va">res</span><span class="op">[..]);</span></span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>  <span class="va">ok</span> <span class="op">:</span>= <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>One of favourite saying from <a
+href="https://leino.science/papers/krml233.pdf">Developing Verified
+Programs in Dafny</a> is - How strong or weak to make a specification is
+an engineering choice—a trade-off between assurance and the price to
+obtain that assurance. We want to prove third postcondition. So let’s
+pay the price - providing argument with enough details that computer can
+accept it. Convincing will require lines of code as large as initial
+implementation, as Dafny can’t figure out details like it did for first
+two postconditions.</p>
+<p>Few observations that will help latter :</p>
+<ul>
+<li><code>arr[i..]</code> is decreasing sequence (invariant of first
+while loop).</li>
+<li><code>arr[i-1]</code> is greater or equal to elements of sequence
+<code>arr[(j+1)..]</code> (invariant of second while loop).<br />
+</li>
+<li><code>arr[i-1]</code> is less than elements of sequence
+<code>arr[i..(j+1)]</code>. This follows from first observation and loop
+condition of second while loop.</li>
+<li><code>res[i..]</code> is increasing sequence. Initially
+<code>res</code> is copy of <code>arr</code> hence <code>res[i..]</code>
+is decreasing sequence. Even after swaping <code>res[i-1]</code> and
+<code>res[j]</code>, <code>res[i..]</code> is decreasing sequence.
+Finally reverse operation makes <code>res[i..]</code> an increasing
+sequence.</li>
+</ul>
+<p>Adding assert statement makes Dafny prove last observation which it
+does without any help. Second statement in code snippet below is <a
+href="https://cseweb.ucsd.edu/~npolikarpova/publications/vstte13.pdf">calculation</a>
+proof to establish obvious fact.</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode dafny"><code class="sourceCode dafny"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>  <span class="kw">assert</span> <span class="va">increasing</span><span class="op">(</span><span class="va">res</span><span class="op">[</span><span class="va">i</span><span class="op">..]);</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">calc</span> <span class="op">{</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">multiset</span><span class="op">(</span><span class="va">arr</span><span class="op">[(</span><span class="va">i</span><span class="op">-</span><span class="dv">1</span><span class="op">)..]);</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span> <span class="kw">assert</span> <span class="va">arr</span><span class="op">[..]</span> == <span class="va">arr</span><span class="op">[..(</span><span class="va">i</span><span class="op">-</span><span class="dv">1</span><span class="op">)]</span> <span class="op">+</span> <span class="va">arr</span><span class="op">[(</span><span class="va">i</span><span class="op">-</span><span class="dv">1</span><span class="op">)..];</span> <span class="op">}</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">multiset</span><span class="op">(</span><span class="va">arr</span><span class="op">[..])</span> <span class="op">-</span> <span class="dt">multiset</span><span class="op">(</span><span class="va">arr</span><span class="op">[..(</span><span class="va">i</span><span class="op">-</span><span class="dv">1</span><span class="op">)]);</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span> <span class="kw">assert</span> <span class="va">arr</span><span class="op">[..(</span><span class="va">i</span><span class="op">-</span><span class="dv">1</span><span class="op">)]</span> == <span class="va">res</span><span class="op">[..(</span><span class="va">i</span><span class="op">-</span><span class="dv">1</span><span class="op">)];</span> <span class="op">}</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">multiset</span><span class="op">(</span><span class="va">res</span><span class="op">[..])</span> <span class="op">-</span> <span class="dt">multiset</span><span class="op">(</span><span class="va">res</span><span class="op">[..(</span><span class="va">i</span><span class="op">-</span><span class="dv">1</span><span class="op">)]);</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span> <span class="kw">assert</span> <span class="va">res</span><span class="op">[..]</span> == <span class="va">res</span><span class="op">[..(</span><span class="va">i</span><span class="op">-</span><span class="dv">1</span><span class="op">)]</span> <span class="op">+</span> <span class="va">res</span><span class="op">[(</span><span class="va">i</span><span class="op">-</span><span class="dv">1</span><span class="op">)..];</span> <span class="op">}</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">multiset</span><span class="op">(</span><span class="va">res</span><span class="op">[(</span><span class="va">i</span><span class="op">-</span><span class="dv">1</span><span class="op">)..]);</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span></code></pre></div>
+<p>Complete proof of third postcodition is listed below. Proof uses case
+analysis on index used in <code>greater</code> predicate. There are
+three cases to consider. If <code>k</code> is less than <code>i-1</code>
+then <code>arr[..k] == res[..k]</code> and
+<code>arr[k] == res[k]</code>. It is easy to prove
+<code>greater(res, m)</code> from these facts. In fact Dafny is able to
+do it automatically. Case when <code>k</code> is greater than
+<code>i-1</code> is impossible which we show by proving false. Observe
+that <code>m[k]</code> should be in <code>multiset(m[k..])</code> hence
+in <code>multiset(arr[k..])</code>. Since <code>arr[k..]</code> is
+decreasing sequence <code>m[k]</code> should be less or equal to
+<code>arr[k]</code>, first element of sequence. Starting with assumption
+<code>arr[k]</code> is less than <code>m[k]</code> we proved that
+<code>m[k]</code> is less or equal to <code>arr[k]</code>, a
+contradiction.</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode dafny"><code class="sourceCode dafny"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">forall</span> <span class="va">m</span> <span class="op">|</span> <span class="va">permutation</span><span class="op">(</span><span class="va">arr</span><span class="op">[..],</span> <span class="va">m</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="va">greater</span><span class="op">(</span><span class="va">arr</span><span class="op">[..],</span> <span class="va">m</span><span class="op">)</span> <span class="ot">ensures</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">greater</span><span class="op">(</span><span class="va">res</span><span class="op">[..],</span> <span class="va">m</span><span class="op">)</span> <span class="op">||</span> <span class="op">(</span><span class="va">res</span><span class="op">[..]</span> == <span class="va">m</span><span class="op">)</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="op">{</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="va">res</span><span class="op">[..]</span> == <span class="va">m</span> <span class="op">{}</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">else</span> <span class="op">{</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>      <span class="kw">var</span> <span class="va">k</span> <span class="op">:|</span> <span class="dv">0</span> <span class="op">&lt;=</span> <span class="va">k</span> <span class="op">&lt;</span> <span class="va">arr</span><span class="op">.</span><span class="va">Length</span> <span class="op">&amp;&amp;</span> </span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>           <span class="op">(</span><span class="kw">forall</span> <span class="va">l</span> <span class="op">::</span> <span class="dv">0</span> <span class="op">&lt;=</span> <span class="va">l</span> <span class="op">&lt;</span> <span class="va">k</span> <span class="op">==&gt;</span> <span class="va">arr</span><span class="op">[</span><span class="va">l</span><span class="op">]</span> == <span class="va">m</span><span class="op">[</span><span class="va">l</span><span class="op">])</span> <span class="op">&amp;&amp;</span> <span class="va">arr</span><span class="op">[</span><span class="va">k</span><span class="op">]</span> <span class="op">&lt;</span> <span class="va">m</span><span class="op">[</span><span class="va">k</span><span class="op">];</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>      <span class="kw">calc</span> <span class="op">{</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>        <span class="dt">multiset</span><span class="op">(</span><span class="va">arr</span><span class="op">[</span><span class="va">k</span><span class="op">..]);</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span> <span class="kw">assert</span> <span class="va">arr</span><span class="op">[..]</span> == <span class="va">arr</span><span class="op">[..</span><span class="va">k</span><span class="op">]</span> <span class="op">+</span> <span class="va">arr</span><span class="op">[</span><span class="va">k</span><span class="op">..];</span> <span class="op">}</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>        <span class="dt">multiset</span><span class="op">(</span><span class="va">arr</span><span class="op">[..])</span> <span class="op">-</span> <span class="dt">multiset</span><span class="op">(</span><span class="va">arr</span><span class="op">[..</span><span class="va">k</span><span class="op">]);</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span> <span class="kw">assert</span> <span class="va">permutation</span><span class="op">(</span><span class="va">arr</span><span class="op">[..],</span> <span class="va">m</span><span class="op">);</span> <span class="va">identity_permutation</span><span class="op">(</span><span class="va">arr</span><span class="op">[..</span><span class="va">k</span><span class="op">],</span> <span class="va">m</span><span class="op">[..</span><span class="va">k</span><span class="op">]);</span> <span class="op">}</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>        <span class="dt">multiset</span><span class="op">(</span><span class="va">m</span><span class="op">)</span> <span class="op">-</span> <span class="dt">multiset</span><span class="op">(</span><span class="va">m</span><span class="op">[..</span><span class="va">k</span><span class="op">]);</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span> <span class="kw">assert</span> <span class="va">m</span> == <span class="va">m</span><span class="op">[..</span><span class="va">k</span><span class="op">]</span> <span class="op">+</span> <span class="va">m</span><span class="op">[</span><span class="va">k</span><span class="op">..];</span> <span class="op">}</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>        <span class="dt">multiset</span><span class="op">(</span><span class="va">m</span><span class="op">[</span><span class="va">k</span><span class="op">..]);</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>      <span class="op">}</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>      <span class="kw">if</span> <span class="va">k</span> <span class="op">&lt;</span> <span class="va">i</span> <span class="op">-</span> <span class="dv">1</span> <span class="op">{}</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>      <span class="kw">else</span> <span class="kw">if</span> <span class="va">k</span> <span class="op">&gt;</span> <span class="va">i</span> <span class="op">-</span> <span class="dv">1</span> <span class="op">{</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>        <span class="kw">assert</span> <span class="va">m</span><span class="op">[</span><span class="va">k</span><span class="op">]</span> <span class="op">in</span> <span class="dt">multiset</span><span class="op">(</span><span class="va">arr</span><span class="op">[</span><span class="va">k</span><span class="op">..])</span> <span class="kw">by</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>          <span class="op">{</span> <span class="kw">assert</span> <span class="dt">multiset</span><span class="op">(</span><span class="va">arr</span><span class="op">[</span><span class="va">k</span><span class="op">..])</span> == <span class="dt">multiset</span><span class="op">(</span><span class="va">m</span><span class="op">[</span><span class="va">k</span><span class="op">..]);</span> <span class="op">}</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>        <span class="kw">assert</span> <span class="va">m</span><span class="op">[</span><span class="va">k</span><span class="op">]</span> <span class="op">&lt;=</span> <span class="va">arr</span><span class="op">[</span><span class="va">k</span><span class="op">]</span> <span class="kw">by</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>          <span class="op">{</span> <span class="kw">assert</span> <span class="va">decreasing</span><span class="op">(</span><span class="va">arr</span><span class="op">[</span><span class="va">k</span><span class="op">..]);</span> <span class="va">decreasing_aux_lemma</span><span class="op">(</span><span class="va">m</span><span class="op">[</span><span class="va">k</span><span class="op">],</span> <span class="va">arr</span><span class="op">[</span><span class="va">k</span><span class="op">..]);</span> <span class="op">}</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>        <span class="kw">assert</span> <span class="kw">false</span> <span class="kw">by</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>          <span class="op">{</span> <span class="kw">assert</span> <span class="va">m</span><span class="op">[</span><span class="va">k</span><span class="op">]</span> <span class="op">&lt;=</span> <span class="va">arr</span><span class="op">[</span><span class="va">k</span><span class="op">];</span> <span class="kw">assert</span> <span class="va">arr</span><span class="op">[</span><span class="va">k</span><span class="op">]</span> <span class="op">&lt;</span> <span class="va">m</span><span class="op">[</span><span class="va">k</span><span class="op">];</span> <span class="op">}</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>      <span class="op">}</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>      <span class="kw">else</span> <span class="op">{</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> <span class="va">m</span><span class="op">[</span><span class="va">k</span><span class="op">]</span> == <span class="va">res</span><span class="op">[</span><span class="va">k</span><span class="op">]</span> <span class="op">{</span></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>          <span class="kw">calc</span> <span class="op">{</span></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>            <span class="dt">multiset</span><span class="op">(</span><span class="va">m</span><span class="op">[(</span><span class="va">k</span><span class="op">+</span><span class="dv">1</span><span class="op">)..]);</span></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>            <span class="op">{</span> <span class="kw">assert</span> <span class="va">m</span><span class="op">[</span><span class="va">k</span><span class="op">..]</span> == <span class="va">m</span><span class="op">[</span><span class="va">k</span><span class="op">..(</span><span class="va">k</span><span class="op">+</span><span class="dv">1</span><span class="op">)]</span> <span class="op">+</span> <span class="va">m</span><span class="op">[(</span><span class="va">k</span><span class="op">+</span><span class="dv">1</span><span class="op">)..];</span> <span class="op">}</span></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>            <span class="dt">multiset</span><span class="op">(</span><span class="va">m</span><span class="op">[</span><span class="va">k</span><span class="op">..])</span> <span class="op">-</span> <span class="dt">multiset</span><span class="op">(</span><span class="va">m</span><span class="op">[</span><span class="va">k</span><span class="op">..(</span><span class="va">k</span><span class="op">+</span><span class="dv">1</span><span class="op">)]);</span></span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>            <span class="op">{</span> <span class="kw">assert</span> <span class="va">m</span><span class="op">[</span><span class="va">k</span><span class="op">..(</span><span class="va">k</span><span class="op">+</span><span class="dv">1</span><span class="op">)]</span> == <span class="va">res</span><span class="op">[</span><span class="va">k</span><span class="op">..(</span><span class="va">k</span><span class="op">+</span><span class="dv">1</span><span class="op">)];</span> <span class="op">}</span></span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>            <span class="dt">multiset</span><span class="op">(</span><span class="va">arr</span><span class="op">[</span><span class="va">k</span><span class="op">..])</span> <span class="op">-</span> <span class="dt">multiset</span><span class="op">(</span><span class="va">res</span><span class="op">[</span><span class="va">k</span><span class="op">..(</span><span class="va">k</span><span class="op">+</span><span class="dv">1</span><span class="op">)]);</span></span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>            <span class="dt">multiset</span><span class="op">(</span><span class="va">res</span><span class="op">[</span><span class="va">k</span><span class="op">..])</span> <span class="op">-</span> <span class="dt">multiset</span><span class="op">(</span><span class="va">res</span><span class="op">[</span><span class="va">k</span><span class="op">..(</span><span class="va">k</span><span class="op">+</span><span class="dv">1</span><span class="op">)]);</span></span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>            <span class="op">{</span> <span class="kw">assert</span> <span class="va">res</span><span class="op">[</span><span class="va">k</span><span class="op">..]</span> == <span class="va">res</span><span class="op">[</span><span class="va">k</span><span class="op">..(</span><span class="va">k</span><span class="op">+</span><span class="dv">1</span><span class="op">)]</span> <span class="op">+</span> <span class="va">res</span><span class="op">[(</span><span class="va">k</span><span class="op">+</span><span class="dv">1</span><span class="op">)..];</span> <span class="op">}</span></span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>            <span class="dt">multiset</span><span class="op">(</span><span class="va">res</span><span class="op">[(</span><span class="va">k</span><span class="op">+</span><span class="dv">1</span><span class="op">)..]);</span></span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>          <span class="op">}</span></span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>          <span class="kw">assert</span> <span class="va">greater</span><span class="op">(</span><span class="va">res</span><span class="op">[..],</span> <span class="va">m</span><span class="op">)</span> <span class="kw">by</span> <span class="op">{</span></span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>            <span class="va">increasing_multiset_aux_lemma</span><span class="op">(</span><span class="va">res</span><span class="op">[(</span><span class="va">k</span><span class="op">+</span><span class="dv">1</span><span class="op">)..],</span> <span class="va">m</span><span class="op">[(</span><span class="va">k</span><span class="op">+</span><span class="dv">1</span><span class="op">)..]);</span></span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>          <span class="op">}</span></span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a>        <span class="kw">else</span> <span class="kw">if</span> <span class="va">m</span><span class="op">[</span><span class="va">k</span><span class="op">]</span> <span class="op">&lt;</span> <span class="va">res</span><span class="op">[</span><span class="va">k</span><span class="op">]</span> <span class="op">{</span></span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>          <span class="kw">forall</span> <span class="va">l</span> <span class="op">|</span> <span class="va">l</span> <span class="op">in</span> <span class="dt">multiset</span><span class="op">(</span><span class="va">arr</span><span class="op">[</span><span class="va">k</span><span class="op">..])</span> <span class="op">&amp;&amp;</span> <span class="va">arr</span><span class="op">[</span><span class="va">k</span><span class="op">]</span> <span class="op">&lt;</span> <span class="va">l</span> </span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>            <span class="ot">ensures</span> <span class="va">res</span><span class="op">[</span><span class="va">k</span><span class="op">]</span> <span class="op">&lt;=</span> <span class="va">l</span> </span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a>          <span class="op">{</span></span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a>            <span class="kw">var</span> <span class="va">idx</span> <span class="op">:|</span> <span class="va">k</span> <span class="op">&lt;=</span> <span class="va">idx</span> <span class="op">&lt;</span> <span class="va">arr</span><span class="op">.</span><span class="va">Length</span> <span class="op">&amp;&amp;</span> <span class="va">arr</span><span class="op">[</span><span class="va">idx</span><span class="op">]</span> == <span class="va">l</span><span class="op">;</span></span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>            <span class="kw">if</span> <span class="va">idx</span> == <span class="va">i</span> <span class="op">-</span> <span class="dv">1</span> <span class="op">{</span></span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a>              <span class="kw">assert</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a>            <span class="op">}</span></span>
+<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a>            <span class="kw">if</span> <span class="va">i</span> <span class="op">&lt;=</span> <span class="va">idx</span> <span class="op">&lt;=</span> <span class="va">j</span> <span class="op">{</span></span>
+<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a>              <span class="kw">assert</span> <span class="va">decreasing</span><span class="op">(</span><span class="va">arr</span><span class="op">[</span><span class="va">idx</span><span class="op">..]);</span></span>
+<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a>              <span class="va">decreasing_aux_lemma</span><span class="op">(</span><span class="va">arr</span><span class="op">[</span><span class="va">j</span><span class="op">],</span> <span class="va">arr</span><span class="op">[</span><span class="va">idx</span><span class="op">..]);</span></span>
+<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a>              <span class="kw">assert</span> <span class="va">arr</span><span class="op">[</span><span class="va">idx</span><span class="op">]</span> <span class="op">&gt;=</span> <span class="va">res</span><span class="op">[</span><span class="va">k</span><span class="op">]</span> <span class="kw">by</span> <span class="op">{</span></span>
+<span id="cb6-54"><a href="#cb6-54" aria-hidden="true" tabindex="-1"></a>                <span class="kw">assert</span> <span class="va">arr</span><span class="op">[</span><span class="va">idx</span><span class="op">]</span> <span class="op">&gt;=</span> <span class="va">arr</span><span class="op">[</span><span class="va">j</span><span class="op">];</span></span>
+<span id="cb6-55"><a href="#cb6-55" aria-hidden="true" tabindex="-1"></a>              <span class="op">}</span></span>
+<span id="cb6-56"><a href="#cb6-56" aria-hidden="true" tabindex="-1"></a>            <span class="op">}</span></span>
+<span id="cb6-57"><a href="#cb6-57" aria-hidden="true" tabindex="-1"></a>          <span class="op">}</span></span>
+<span id="cb6-58"><a href="#cb6-58" aria-hidden="true" tabindex="-1"></a>          <span class="kw">assert</span> <span class="va">m</span><span class="op">[</span><span class="va">k</span><span class="op">]</span> <span class="op">in</span> <span class="dt">multiset</span><span class="op">(</span><span class="va">arr</span><span class="op">[</span><span class="va">k</span><span class="op">..])</span> <span class="kw">by</span> <span class="op">{</span></span>
+<span id="cb6-59"><a href="#cb6-59" aria-hidden="true" tabindex="-1"></a>            <span class="kw">assert</span> <span class="va">m</span><span class="op">[</span><span class="va">k</span><span class="op">]</span> <span class="op">in</span> <span class="dt">multiset</span><span class="op">(</span><span class="va">m</span><span class="op">[</span><span class="va">k</span><span class="op">..]);</span></span>
+<span id="cb6-60"><a href="#cb6-60" aria-hidden="true" tabindex="-1"></a>          <span class="op">}</span></span>
+<span id="cb6-61"><a href="#cb6-61" aria-hidden="true" tabindex="-1"></a>          <span class="kw">assert</span> <span class="kw">false</span> <span class="kw">by</span> <span class="op">{</span></span>
+<span id="cb6-62"><a href="#cb6-62" aria-hidden="true" tabindex="-1"></a>           <span class="kw">assert</span> <span class="va">arr</span><span class="op">[</span><span class="va">k</span><span class="op">]</span> <span class="op">&lt;</span> <span class="va">m</span><span class="op">[</span><span class="va">k</span><span class="op">];</span></span>
+<span id="cb6-63"><a href="#cb6-63" aria-hidden="true" tabindex="-1"></a>           <span class="kw">assert</span> <span class="va">res</span><span class="op">[</span><span class="va">k</span><span class="op">]</span> <span class="op">&lt;=</span> <span class="va">m</span><span class="op">[</span><span class="va">k</span><span class="op">];</span></span>
+<span id="cb6-64"><a href="#cb6-64" aria-hidden="true" tabindex="-1"></a>          <span class="op">}</span></span>
+<span id="cb6-65"><a href="#cb6-65" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb6-66"><a href="#cb6-66" aria-hidden="true" tabindex="-1"></a>      <span class="op">}</span></span>
+<span id="cb6-67"><a href="#cb6-67" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb6-68"><a href="#cb6-68" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span></code></pre></div>
+<p>Finally we arrive at case when <code>k</code> is equal
+<code>i-1</code>. It requires further case analysis. If
+<code>m[k]</code> is equal to <code>res[k]</code> then
+<code>multiset(m[(k+1)..])</code> is equal to
+<code>multiset(res[(k+1)..])</code>. By using
+<code>increasing_multiset_aux_lemma</code> which states that increasing
+sequence is smallest among sequences generated from multiset we complete
+the proof. Case <code>m[k]</code> is less than <code>res[k]</code> is
+also impossible as we picked smallest element greater than
+<code>res[k]</code> in <code>multiset(arr[k..])</code> to replace it
+with. Using <code>forall</code> statement we remind Dafny of this fact.
+Establishing false follows similiar pattern as earlier
+contradiction.</p>
+<p>Final verified program with all auxiliary lemma is listed <a
+href="https://gist.github.com/rdivyanshu/c7ced3c3ff2bfc9c3cc38b2cae6609f0">here</a>.
+That’s all.</p>
+</body>
+</html>

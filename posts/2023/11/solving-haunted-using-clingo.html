@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Uncovering ghouls using Answer Set Programming</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        background-color: #ffffff;
+        color: #a0a0a0;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #a0a0a0;  padding-left: 4px; }
+    div.sourceCode
+      { color: #1f1c1b;  }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span { color: #1f1c1b; } /* Normal */
+    code span.al { color: #bf0303; background-color: #f7e6e6; font-weight: bold; } /* Alert */
+    code span.an { color: #ca60ca; } /* Annotation */
+    code span.at { color: #0057ae; } /* Attribute */
+    code span.bn { color: #b08000; } /* BaseN */
+    code span.bu { color: #644a9b; font-weight: bold; } /* BuiltIn */
+    code span.cf { color: #1f1c1b; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #924c9d; } /* Char */
+    code span.cn { color: #aa5500; } /* Constant */
+    code span.co { color: #898887; } /* Comment */
+    code span.cv { color: #0095ff; } /* CommentVar */
+    code span.do { color: #607880; } /* Documentation */
+    code span.dt { color: #0057ae; } /* DataType */
+    code span.dv { color: #1f1c1b; } /* DecVal */
+    code span.er { color: #bf0303; text-decoration: underline; } /* Error */
+    code span.ex { color: #4379a0; font-weight: bold; } /* Extension */
+    code span.fl { color: #b08000; } /* Float */
+    code span.fu { color: #644a9b; } /* Function */
+    code span.im { color: #ff5500; } /* Import */
+    code span.in { color: #b08000; } /* Information */
+    code span.kw { color: #1f1c1b; font-weight: bold; } /* Keyword */
+    code span.op { color: #1f1c1b; } /* Operator */
+    code span.ot { color: #1d2482; } /* Other */
+    code span.pp { color: #006e28; } /* Preprocessor */
+    code span.re { color: #0057ae; background-color: #e0e9f8; } /* RegionMarker */
+    code span.sc { color: #3daee9; } /* SpecialChar */
+    code span.ss { color: #ff5500; } /* SpecialString */
+    code span.st { color: #bf0303; } /* String */
+    code span.va { color: #1f1c1b; } /* Variable */
+    code span.vs { color: #bf0303; } /* VerbatimString */
+    code span.wa { color: #bf0303; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="../../../style.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<p> <a href="../../../index.html"> ↫ Home </a> </p>
+<header id="title-block-header">
+<h1 class="title">Uncovering ghouls using Answer Set Programming</h1>
+</header>
+<p>Recently I came across this nice puzzle - <a
+href="https://krazydad.com/haunted/">Haunted</a>. These days my impulse
+when presented with puzzle is throw Answer Set Programming on it. To get
+idea of ASP follow <a
+href="../../2023/07/solving-hitori-using-clingo.html">this blog</a>
+which solves another puzzle which has somewhat straightforward encoding
+in ASP.</p>
+<p><img src="../../../img/haunted.png" /></p>
+<p>A sample puzzle instance and its solution is shown above. In haunted
+you have to figure out where ghouls (ghosts, zombies and draculas) are
+hidding in rectangular grid. You can’t directly see ghosts but they are
+visible in mirrors. Draculas conceal themselves in mirrors but otherwise
+visible. Zombies have no such powers. You are also given count of each
+ghoul types and how many of them are visible (counting multiplicity)
+from boundary locations.</p>
+<p>As per tradition, we encode instance and solution separately. First
+up instance of above puzzle</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode default"><code class="sourceCode default"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>#const n = 4.</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>count(0, 1, 0). count(0, 2, 2). count(0, 3, 2). count(0, 4, 3).</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>count(1, 0, 2). count(2, 0, 1). count(3, 0, 2). count(4, 0, 0).</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>count(5, 1, 1). count(5, 2, 1). count(5, 3, 1). count(5, 4, 2).</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>count(1, 5, 1). count(2, 5, 1). count(3, 5, 2). count(4, 5, 1).</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>mirror(1, 4, &quot;/&quot;).</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>mirror(2, 1, &quot;\\&quot;). mirror(2, 4, &quot;/&quot;).</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>mirror(3, 2, &quot;/&quot;). mirror(3, 3, &quot;/&quot;).</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>mirror(4, 2, &quot;\\&quot;). mirror(4, 3, &quot;\\&quot;).</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>ghost(2). dracula(4). zombie(3).</span></code></pre></div>
+<p>We declare size of grid as constant <code>n</code>.
+<code>count(X, Y, N)</code> encodes relation that from <code>X</code>,
+<code>Y</code> coordinate <code>N</code> number of ghouls are visible
+(Grid has been extended to include <code>0</code>th and
+<code>(n+1)</code>th row and column). <code>mirror(X, Y, T)</code>
+states the fact that there is mirror of type <code>T</code> at location
+<code>X</code>, <code>Y</code>. Finally number of each ghoul type is
+mentioned.</p>
+<p>Next general solution as described below. First statement describes
+our grid. Next 3 statements place ghouls on grid. For example
+<code>{ ghost(X, Y) : grid(X, Y) } = N :- ghost(N)</code> states that
+each grid location is valid placement for ghost though solution should
+only select as many as grid locations as there are ghosts. After this we
+add constraints that ghouls and mirrors don’t occupy same place as well
+as two different kind of ghouls.</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode default"><code class="sourceCode default"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>grid(X, Y) :- X = 1..n, Y = 1..n.</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>{ ghost(X, Y) : grid(X, Y) } = N :- ghost(N).</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>{ dracula(X, Y) : grid(X, Y) } = N :- dracula(N).</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>{ zombie(X, Y) : grid(X, Y) } = N :- zombie(N).</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>:- ghost(X, Y), mirror(X, Y, T).</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>:- dracula(X, Y), mirror(X, Y, T).</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>:- zombie(X, Y), mirror(X, Y, T).</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>:- ghost(X, Y), dracula(X, Y).</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>:- ghost(X, Y), zombie(X, Y).</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>:- dracula(X, Y), zombie(X, Y).</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>ghost(X, Y, N) :- count(X, Y, TN),</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>         N = #count { GX, GY, D : mirror_visible(X, Y, GX, GY, D), ghost(GX, GY) }.</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>dracula(X, Y, N) :- count(X, Y, TN),</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>         N = #count { DX, DY, D : direct_visible(X, Y, DX, DY, D), dracula(DX, DY) }.</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>zombie(X, Y, N1 + N2) :- count(X, Y, TN),</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>         N1 = #count { ZX, ZY, D : mirror_visible(X, Y, ZX, ZY, D), zombie(ZX, ZY) },</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>         N2 = #count { ZX, ZY, D : direct_visible(X, Y, ZX, ZY, D), zombie(ZX, ZY) }.</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>:- count(X, Y, N), ghost(X, Y, G), dracula(X, Y, D), zombie(X, Y, Z), N != G + D + Z.</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>#show ghost/2.</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>#show dracula/2.</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>#show zombie/2.</span></code></pre></div>
+<p><code>ghost(X, Y, N)</code> inscribes that <code>N</code> ghosts are
+visible from boundary location <code>X</code>, <code>Y</code>.
+<code>N</code> is equal to number of times we see ghosts in mirrors.
+Aggregate form <code>#count</code> counts number of elements in a set.
+In our case elements are tuple <code>GX</code>, <code>GY</code>,
+<code>D</code> where <code>GX</code>, <code>GY</code> is location of
+ghost which is visible from <code>X</code>, <code>Y</code>. We need
+additional direction component <code>D</code> to account for multiple
+views of same ghoul by mirror reflections. Last component of
+<code>count/3</code> should be sum of last components of
+<code>ghost/3</code>, <code>dracula/3</code> and <code>zombie/3</code>
+as mentioned as constraint. Notice that clingo (ASP implementation we
+are using) allows us to use same name for relations with different
+arity. That’s why a relation is mentioned by its name and arity like
+<code>ghost/2</code> in show directive.</p>
+<p>We haven’t defined <code>mirror_visible</code> and
+<code>direct_visible</code> relations yet. It might be possible to
+declare such relation in ASP declarative language, but I found it
+cumbersome to do so and used it as opportunity to learn about clingo
+python scripting facility documented <a
+href="https://potassco.org/clingo/python-api/5.6/">here</a>.</p>
+<p>We proceed in steps. First let us read instance file, store each
+statement in an array besides adding it to program we are currently
+evaluating.</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode default"><code class="sourceCode default"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>statements = []</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>clingo.ast.parse_string(</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>   open(&quot;instance.lp&quot;).read(),</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>   lambda st: statements.append(st)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>with clingo.ast.ProgramBuilder(ctl) as b:</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>   for st in statements:</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>      b.add(st)</span></code></pre></div>
+<p>Next we will find location of mirrors in grid by going through each
+rule and checking if its head starts with <code>mirror</code>. If it is
+we will store arguments in <code>mirror_loc</code> - its location and
+type.</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode default"><code class="sourceCode default"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>mirror_loc = []</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>for st in statements:</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>   if st.ast_type != clingo.ast.ASTType.Rule:</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>      continue</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>   ast_dict = clingox.ast.ast_to_dict(st)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>   if ast_dict[&quot;head&quot;][&quot;atom&quot;][&quot;symbol&quot;][&quot;name&quot;] != &quot;mirror&quot;:</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>      continue</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>   arguments = ast_dict[&quot;head&quot;][&quot;atom&quot;][&quot;symbol&quot;][&quot;arguments&quot;]</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>   arguments = map(lambda x: clingox.ast.dict_to_ast(x), arguments)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>   r, c, t = map(lambda x: dict(x.items())[&quot;symbol&quot;], arguments)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>   mirror_loc.append(((r.number, c.number), t.string))</span></code></pre></div>
+<p>For each boundary location we trace path of light as it bounces off
+through mirrors storing which grid location it arrives at via mirrors
+and which directly. Then we add appropriate relation -
+<code>direct_visible</code> or <code>mirror_visible</code>. When finding
+out mirror location we have to deconstruct clingo AST, here we have to
+construct clingo AST which is done using <code>build_rule_ast</code>
+function.</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode default"><code class="sourceCode default"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>lookouts = itertools.chain.from_iterable(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>   [[(0, i), (n+1, i), (i, 0), (i, n+1)] for i in range(1, n+1)])</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>for i, j in lookouts:</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>   direct, mirror = visibility(n, i, j, dict(mirror_loc))</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>   with clingo.ast.ProgramBuilder(ctl) as b:</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>      for (r, c, d) in direct:</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>         b.add(build_rule_ast(</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>                &quot;direct_visible&quot;,</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>                [clingo.symbol.Number(i), clingo.symbol.Number(j),</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>                 clingo.symbol.Number(r), clingo.symbol.Number(c),</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>                 clingo.symbol.String(d)]))</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>      for (r, c, d) in mirror:</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>         b.add(build_rule_ast(</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>                &quot;mirror_visible&quot;,</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>                [clingo.symbol.Number(i), clingo.symbol.Number(j),</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>                 clingo.symbol.Number(r), clingo.symbol.Number(c),</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>                 clingo.symbol.String(d)]))</span></code></pre></div>
+<p>Let’s finally run our <a
+href="https://gist.github.com/rdivyanshu/ea7d280767c7c68cffb94f1421813efa">program</a>.</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode default"><code class="sourceCode default"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a># clingo solution.lp</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>clingo version 5.6.2</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>Reading from solution.lp</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>Solving...</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>Answer: 1</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>zombie(1,2) zombie(1,3) zombie(4,4) dracula(2,2) dracula(2,3) dracula(3,1) </span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>dracula(3,4) ghost(1,1) ghost(4,1)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>SATISFIABLE</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>Models       : 1+</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>Calls        : 1</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>Time         : 0.071s (Solving: 0.00s 1st Model: 0.00s Unsat: 0.00s)</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>CPU Time     : 0.071s</span></code></pre></div>
+</body>
+</html>

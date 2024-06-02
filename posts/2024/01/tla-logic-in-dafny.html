@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Verifying using temporal logic of action in Dafny</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        background-color: #ffffff;
+        color: #a0a0a0;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #a0a0a0;  padding-left: 4px; }
+    div.sourceCode
+      { color: #1f1c1b;  }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span { color: #1f1c1b; } /* Normal */
+    code span.al { color: #bf0303; background-color: #f7e6e6; font-weight: bold; } /* Alert */
+    code span.an { color: #ca60ca; } /* Annotation */
+    code span.at { color: #0057ae; } /* Attribute */
+    code span.bn { color: #b08000; } /* BaseN */
+    code span.bu { color: #644a9b; font-weight: bold; } /* BuiltIn */
+    code span.cf { color: #1f1c1b; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #924c9d; } /* Char */
+    code span.cn { color: #aa5500; } /* Constant */
+    code span.co { color: #898887; } /* Comment */
+    code span.cv { color: #0095ff; } /* CommentVar */
+    code span.do { color: #607880; } /* Documentation */
+    code span.dt { color: #0057ae; } /* DataType */
+    code span.dv { color: #1f1c1b; } /* DecVal */
+    code span.er { color: #bf0303; text-decoration: underline; } /* Error */
+    code span.ex { color: #4379a0; font-weight: bold; } /* Extension */
+    code span.fl { color: #b08000; } /* Float */
+    code span.fu { color: #644a9b; } /* Function */
+    code span.im { color: #ff5500; } /* Import */
+    code span.in { color: #b08000; } /* Information */
+    code span.kw { color: #1f1c1b; font-weight: bold; } /* Keyword */
+    code span.op { color: #1f1c1b; } /* Operator */
+    code span.ot { color: #1d2482; } /* Other */
+    code span.pp { color: #006e28; } /* Preprocessor */
+    code span.re { color: #0057ae; background-color: #e0e9f8; } /* RegionMarker */
+    code span.sc { color: #3daee9; } /* SpecialChar */
+    code span.ss { color: #ff5500; } /* SpecialString */
+    code span.st { color: #bf0303; } /* String */
+    code span.va { color: #1f1c1b; } /* Variable */
+    code span.vs { color: #bf0303; } /* VerbatimString */
+    code span.wa { color: #bf0303; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="../../../style.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<p> <a href="../../../index.html"> ↫ Home </a> </p>
+<header id="title-block-header">
+<h1 class="title">Verifying using temporal logic of action in Dafny</h1>
+</header>
+<p>In <a href="../../2023/08/stuttering-steps-in-tla.html">previous
+blog</a> we looked into why TLA+ specification enforces SI (stuttering
+insensitivity) and how verifying liveness assertion required us to add
+fairness condition in spec. In this blog we will model timer displaying
+minute in Dafny using temporal logic of action. And then we will prove
+that specifiction, with fairness condition included, implies that timer
+will eventually reach 0 (In previous blog we model checked this
+property).</p>
+<p>First order of bussiness is encode state of our system, specify what
+it is correct initial state and how system moves from one state to
+another. We need to be mindful that our action satistifes stuttering
+insensitivity requirement of temporal logic of action. Formally step
+<code>st</code> is enabled in state <code>s</code> if there exists state
+<code>e</code> such that <code>st(s, e)</code> is true. There is easlier
+way to say so for DecreaseMin step that is min is greater than 0.</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode dafny"><code class="sourceCode dafny"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">datatype</span> <span class="va">State</span> = <span class="va">State</span><span class="op">(</span><span class="va">min</span><span class="op">:</span> <span class="dt">int</span><span class="op">)</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">predicate</span> <span class="va">Init</span><span class="op">(</span><span class="va">s</span><span class="op">:</span> <span class="va">State</span><span class="op">){</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="va">s</span><span class="op">.</span><span class="va">min</span> == <span class="dv">5</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="kw">predicate</span> <span class="va">EnabledDecreaseMin</span><span class="op">(</span><span class="va">s</span><span class="op">:</span> <span class="va">State</span><span class="op">){</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="va">s</span><span class="op">.</span><span class="va">min</span> <span class="op">&gt;</span> <span class="dv">0</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="kw">predicate</span> <span class="va">DecreaseMin</span><span class="op">(</span><span class="va">s</span><span class="op">:</span> <span class="va">State</span><span class="op">,</span> <span class="va">t</span><span class="op">:</span> <span class="va">State</span><span class="op">){</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="va">EnabledDecreaseMin</span><span class="op">(</span><span class="va">s</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="va">s</span><span class="op">.</span><span class="va">min</span> <span class="op">-</span> <span class="dv">1</span> == <span class="va">t</span><span class="op">.</span><span class="va">min</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="kw">predicate</span> <span class="va">Stutter</span><span class="op">(</span><span class="va">s</span><span class="op">:</span> <span class="va">State</span><span class="op">,</span> <span class="va">t</span><span class="op">:</span> <span class="va">State</span><span class="op">){</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>  <span class="va">s</span><span class="op">.</span><span class="va">min</span> == <span class="va">t</span><span class="op">.</span><span class="va">min</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="kw">predicate</span> <span class="va">Next</span><span class="op">(</span><span class="va">s</span><span class="op">:</span> <span class="va">State</span><span class="op">,</span> <span class="va">t</span><span class="op">:</span> <span class="va">State</span><span class="op">){</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>  <span class="va">DecreaseMin</span><span class="op">(</span><span class="va">s</span><span class="op">,</span> <span class="va">t</span><span class="op">)</span> <span class="op">||</span> <span class="va">Stutter</span><span class="op">(</span><span class="va">s</span><span class="op">,</span> <span class="va">t</span><span class="op">)</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>TLA+ avoids explicit mention of index of state in behavior. In Dafny
+we will be using infinite map <code>imap</code> to model behavior where
+value at key <code>n</code> is <code>nth</code> state. That is why we
+have additional requirement in spec that every natural number exists in
+map. Next we want DecreaseMin step to be weakly fair. I am using
+definition from Chapter 8 of Specifying Systems where it is defined to
+be <code>[]([](Enabled &lt;A&gt;_v) =&gt; &lt;&gt;&lt;A&gt;_v)</code>.
+Step <code>st</code> is weakly fair if <code>st</code> is enabled
+forever then eventually <code>st</code> will happen. There are alternate
+ways to say step is weakly fair, equivalent to this definition. Some
+triggers are mentioned in code below which helps SMT solvers to use
+quantifiers in guided manner but can be ignored for this discussion.</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode dafny"><code class="sourceCode dafny"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="va">Increase</span><span class="op">(</span><span class="va">i</span><span class="op">:</span> <span class="dt">nat</span><span class="op">):</span> <span class="dt">nat</span> <span class="op">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="va">i</span><span class="op">+</span><span class="dv">1</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="kw">ghost</span> <span class="kw">predicate</span> <span class="va">WeakFairness</span><span class="op">(</span><span class="va">t</span><span class="op">:</span> <span class="dt">imap&lt;nat, State&gt;</span><span class="op">)</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="ot">requires</span> <span class="kw">forall</span> <span class="va">i</span> <span class="op">:</span> <span class="dt">nat</span> <span class="op">::</span> <span class="va">i</span> <span class="op">in</span> <span class="va">t</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>   <span class="kw">forall</span> <span class="va">i</span><span class="op">:</span> <span class="dt">nat</span> <span class="at">{:trigger</span> <span class="va">EnabledDecreaseMin</span><span class="op">(</span><span class="va">t</span><span class="op">[</span><span class="va">i</span><span class="op">])}</span> <span class="op">::</span> <span class="op">(</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>      <span class="op">(</span><span class="kw">forall</span> <span class="va">j</span><span class="op">:</span> <span class="dt">nat</span> <span class="op">::</span> <span class="va">j</span> <span class="op">&gt;=</span> <span class="va">i</span> <span class="op">==&gt;</span> <span class="va">EnabledDecreaseMin</span><span class="op">(</span><span class="va">t</span><span class="op">[</span><span class="va">j</span><span class="op">]))</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>      <span class="op">==&gt;</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>      <span class="op">(</span><span class="kw">exists</span> <span class="va">k</span><span class="op">:</span> <span class="dt">nat</span> <span class="op">::</span> <span class="va">k</span> <span class="op">&gt;=</span> <span class="va">i</span> <span class="op">&amp;&amp;</span> <span class="va">DecreaseMin</span><span class="op">(</span><span class="va">t</span><span class="op">[</span><span class="va">k</span><span class="op">],</span> <span class="va">t</span><span class="op">[</span><span class="va">Increase</span><span class="op">(</span><span class="va">k</span><span class="op">)]))</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>   <span class="op">)</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="va">Identity</span><span class="op">(</span><span class="va">n</span><span class="op">:</span> <span class="dt">nat</span><span class="op">)</span> <span class="op">:</span> <span class="dt">nat</span> <span class="op">{</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>  <span class="va">n</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="kw">ghost</span> <span class="kw">predicate</span> <span class="va">Spec</span><span class="op">(</span><span class="va">t</span><span class="op">:</span> <span class="dt">imap&lt;nat, State&gt;</span><span class="op">){</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>   <span class="op">(</span><span class="kw">forall</span> <span class="va">i</span> <span class="op">:</span> <span class="dt">nat</span> <span class="op">::</span> <span class="va">i</span> <span class="op">in</span> <span class="va">t</span><span class="op">)</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a> <span class="op">&amp;&amp;</span> <span class="va">Init</span><span class="op">(</span><span class="va">t</span><span class="op">[</span><span class="dv">0</span><span class="op">])</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a> <span class="op">&amp;&amp;</span> <span class="op">(</span><span class="kw">forall</span> <span class="va">i</span> <span class="op">:</span> <span class="dt">nat</span> <span class="at">{:trigger</span> <span class="va">Identity</span><span class="op">(</span><span class="va">i</span><span class="op">)}::</span> <span class="va">Next</span><span class="op">(</span><span class="va">t</span><span class="op">[</span><span class="va">i</span><span class="op">],</span> <span class="va">t</span><span class="op">[</span><span class="va">i</span><span class="op">+</span><span class="dv">1</span><span class="op">]))</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a> <span class="op">&amp;&amp;</span> <span class="va">WeakFairness</span><span class="op">(</span><span class="va">t</span><span class="op">)</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>We need two safety properties to prove liveness property. First is
+<code>min</code> is always greater than or equal to 0. And second is
+<code>min</code> is non increasing in behavior. I have omitted proof but
+it can be seen <a
+href="https://gist.github.com/rdivyanshu/f2b0a03c6ceeb7659ec6bf9db91e3c86">here</a>.</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode dafny"><code class="sourceCode dafny"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">lemma</span> <span class="va">Safety</span><span class="op">(</span><span class="va">t</span><span class="op">:</span> <span class="dt">imap&lt;nat, State&gt;</span><span class="op">,</span> <span class="va">k</span><span class="op">:</span> <span class="dt">nat</span><span class="op">)</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="ot">requires</span> <span class="va">Spec</span><span class="op">(</span><span class="va">t</span><span class="op">)</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="ot">ensures</span> <span class="va">t</span><span class="op">[</span><span class="va">k</span><span class="op">].</span><span class="va">min</span> <span class="op">&gt;=</span> <span class="dv">0</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="kw">lemma</span> <span class="va">SafetyDecreasing</span><span class="op">(</span><span class="va">t</span><span class="op">:</span> <span class="dt">imap&lt;nat, State&gt;</span><span class="op">,</span> <span class="va">m</span><span class="op">:</span> <span class="dt">nat</span><span class="op">,</span> <span class="va">n</span><span class="op">:</span> <span class="dt">nat</span><span class="op">)</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="ot">requires</span> <span class="va">Spec</span><span class="op">(</span><span class="va">t</span><span class="op">)</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="ot">requires</span> <span class="va">m</span> <span class="op">&lt;=</span> <span class="va">n</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="ot">ensures</span> <span class="va">t</span><span class="op">[</span><span class="va">m</span><span class="op">].</span><span class="va">min</span> <span class="op">&gt;=</span> <span class="va">t</span><span class="op">[</span><span class="va">n</span><span class="op">].</span><span class="va">min</span></span></code></pre></div>
+<p>To prove that timer will eventually reach 0 we start with initial
+state and try to convince Dafny that we can always find state
+<code>m</code> (I am using index of state as synonyms for that state) in
+which <code>min</code> is 0. There are two cases to consider a) when
+antecedent of weak fairness is true and b) when it is false. In second
+case antecedant being false means there exists state <code>k</code> at
+which <code>min</code> is less than or equal to 0 which together with
+safety condition proves that <code>min</code> is exactly 0. In first
+case applying antecedent to weakly fair property gives us state
+<code>k</code> at which next transition will decreases <code>min</code>.
+Note that it just says that <code>min</code> will decrease between state
+<code>k</code> and <code>k+1</code>. It is required that current state
+<code>r</code> has <code>min</code> value greater than or equal to
+<code>min</code> of state <code>k</code> to prove that <code>min</code>
+actually decreases during our search. This is done using safety property
+<code>SafetyDecreasing</code>. Since <code>min</code> is finite positive
+number applying this argument again and again we will reach state
+<code>m</code> where <code>min</code> is 0.</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode dafny"><code class="sourceCode dafny"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">lemma</span> <span class="va">ExistsHelperLemma</span><span class="op">(</span><span class="va">t</span><span class="op">:</span> <span class="dt">imap&lt;nat, State&gt;</span><span class="op">,</span> <span class="va">m</span><span class="op">:</span> <span class="dt">nat</span><span class="op">)</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="ot">requires</span> <span class="kw">forall</span> <span class="va">i</span> <span class="op">:</span> <span class="dt">nat</span> <span class="op">::</span> <span class="va">i</span> <span class="op">in</span> <span class="va">t</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="ot">requires</span> <span class="op">!(</span><span class="kw">forall</span> <span class="va">j</span> <span class="op">:</span> <span class="dt">nat</span> <span class="op">::</span> <span class="va">j</span> <span class="op">&gt;=</span> <span class="va">m</span> <span class="op">==&gt;</span> <span class="va">EnabledDecreaseMin</span><span class="op">(</span><span class="va">t</span><span class="op">[</span><span class="va">j</span><span class="op">]))</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="ot">ensures</span> <span class="kw">exists</span> <span class="va">k</span> <span class="op">:</span> <span class="dt">nat</span> <span class="op">::</span> <span class="va">k</span> <span class="op">&gt;=</span> <span class="va">m</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="va">EnabledDecreaseMin</span><span class="op">(</span><span class="va">t</span><span class="op">[</span><span class="va">k</span><span class="op">])</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="op">{}</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="kw">lemma</span> <span class="va">Eventually</span><span class="op">(</span><span class="va">t</span><span class="op">:</span> <span class="dt">imap&lt;nat, State&gt;</span><span class="op">)</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="ot">requires</span> <span class="va">Spec</span><span class="op">(</span><span class="va">t</span><span class="op">)</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="ot">ensures</span> <span class="kw">exists</span> <span class="va">m</span> <span class="op">:</span> <span class="dt">nat</span> <span class="op">::</span> <span class="va">t</span><span class="op">[</span><span class="va">m</span><span class="op">].</span><span class="va">min</span> == <span class="dv">0</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>   <span class="kw">var</span> <span class="va">r</span> <span class="op">:</span> <span class="dt">nat</span> <span class="op">:</span>= <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>   <span class="kw">while</span> <span class="va">t</span><span class="op">[</span><span class="va">r</span><span class="op">].</span><span class="va">min</span> <span class="op">&gt;</span> <span class="dv">0</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="ot">invariant</span> <span class="va">t</span><span class="op">[</span><span class="va">r</span><span class="op">].</span><span class="va">min</span> <span class="op">&gt;=</span> <span class="dv">0</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    <span class="ot">decreases</span> <span class="va">t</span><span class="op">[</span><span class="va">r</span><span class="op">].</span><span class="va">min</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>   <span class="op">{</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>     <span class="kw">if</span><span class="op">(</span><span class="kw">forall</span> <span class="va">j</span> <span class="op">:</span> <span class="dt">nat</span> <span class="op">::</span> <span class="va">j</span> <span class="op">&gt;=</span> <span class="va">r</span> <span class="op">==&gt;</span> <span class="va">EnabledDecreaseMin</span><span class="op">(</span><span class="va">t</span><span class="op">[</span><span class="va">j</span><span class="op">]))</span> <span class="op">{</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>        <span class="kw">assert</span> <span class="kw">exists</span> <span class="va">k</span><span class="op">:</span> <span class="dt">nat</span> <span class="op">::</span> <span class="va">k</span> <span class="op">&gt;=</span> <span class="va">r</span> <span class="op">&amp;&amp;</span> <span class="va">DecreaseMin</span><span class="op">(</span><span class="va">t</span><span class="op">[</span><span class="va">k</span><span class="op">],</span> <span class="va">t</span><span class="op">[</span><span class="va">Increase</span><span class="op">(</span><span class="va">k</span><span class="op">)])</span> <span class="kw">by</span> <span class="op">{</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>          <span class="kw">assert</span> <span class="va">r</span> == <span class="va">Identity</span><span class="op">(</span><span class="va">r</span><span class="op">);</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>          <span class="kw">assert</span> <span class="va">EnabledDecreaseMin</span><span class="op">(</span><span class="va">t</span><span class="op">[</span><span class="va">r</span><span class="op">]);</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>          <span class="kw">assert</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>            <span class="op">(</span><span class="kw">forall</span> <span class="va">j</span> <span class="op">:</span> <span class="dt">nat</span> <span class="op">::</span> <span class="va">j</span> <span class="op">&gt;=</span> <span class="va">r</span> <span class="op">==&gt;</span> <span class="va">EnabledDecreaseMin</span><span class="op">(</span><span class="va">t</span><span class="op">[</span><span class="va">j</span><span class="op">]))</span> <span class="op">==&gt;</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>            <span class="op">(</span><span class="kw">exists</span> <span class="va">k</span><span class="op">:</span> <span class="dt">nat</span> <span class="op">::</span> <span class="va">k</span> <span class="op">&gt;=</span> <span class="va">r</span> <span class="op">&amp;&amp;</span> <span class="va">DecreaseMin</span><span class="op">(</span><span class="va">t</span><span class="op">[</span><span class="va">k</span><span class="op">],</span> <span class="va">t</span><span class="op">[</span><span class="va">Increase</span><span class="op">(</span><span class="va">k</span><span class="op">)]));</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>        <span class="kw">var</span> <span class="va">k</span> <span class="op">:|</span> <span class="va">k</span> <span class="op">&gt;=</span> <span class="va">r</span> <span class="op">&amp;&amp;</span> <span class="va">DecreaseMin</span><span class="op">(</span><span class="va">t</span><span class="op">[</span><span class="va">k</span><span class="op">],</span> <span class="va">t</span><span class="op">[</span><span class="va">Increase</span><span class="op">(</span><span class="va">k</span><span class="op">)]);</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>        <span class="kw">assert</span> <span class="va">Increase</span><span class="op">(</span><span class="va">k</span><span class="op">)</span> == <span class="va">k</span> <span class="op">+</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>        <span class="va">SafetyDecreasing</span><span class="op">(</span><span class="va">t</span><span class="op">,</span> <span class="va">r</span><span class="op">,</span> <span class="va">k</span><span class="op">);</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>        <span class="kw">assert</span> <span class="va">t</span><span class="op">[</span><span class="va">r</span><span class="op">].</span><span class="va">min</span> <span class="op">&gt;=</span> <span class="va">t</span><span class="op">[</span><span class="va">k</span><span class="op">].</span><span class="va">min</span><span class="op">;</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>        <span class="kw">assert</span> <span class="va">t</span><span class="op">[</span><span class="va">k</span><span class="op">+</span><span class="dv">1</span><span class="op">].</span><span class="va">min</span> == <span class="va">t</span><span class="op">[</span><span class="va">k</span><span class="op">].</span><span class="va">min</span> <span class="op">-</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>        <span class="kw">assert</span> <span class="va">t</span><span class="op">[</span><span class="va">r</span><span class="op">].</span><span class="va">min</span> <span class="op">&gt;=</span> <span class="va">t</span><span class="op">[</span><span class="va">k</span><span class="op">].</span><span class="va">min</span> <span class="op">&gt;</span> <span class="va">t</span><span class="op">[</span><span class="va">k</span><span class="op">+</span><span class="dv">1</span><span class="op">].</span><span class="va">min</span><span class="op">;</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>        <span class="va">r</span> <span class="op">:</span>= <span class="va">k</span> <span class="op">+</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> <span class="va">t</span><span class="op">[</span><span class="va">r</span><span class="op">].</span><span class="va">min</span> == <span class="dv">0</span> <span class="op">{</span> <span class="kw">return</span><span class="op">;</span> <span class="op">}</span></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>     <span class="op">}</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>     <span class="kw">else</span> <span class="op">{</span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>        <span class="kw">assert</span> <span class="op">!(</span><span class="kw">forall</span> <span class="va">j</span> <span class="op">:</span> <span class="dt">nat</span> <span class="op">::</span> <span class="va">j</span> <span class="op">&gt;=</span> <span class="va">r</span> <span class="op">==&gt;</span> <span class="va">EnabledDecreaseMin</span><span class="op">(</span><span class="va">t</span><span class="op">[</span><span class="va">j</span><span class="op">]));</span></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>        <span class="va">ExistsHelperLemma</span><span class="op">(</span><span class="va">t</span><span class="op">,</span> <span class="va">r</span><span class="op">);</span></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>        <span class="kw">var</span> <span class="va">k</span> <span class="op">:|</span> <span class="va">k</span> <span class="op">&gt;=</span> <span class="va">r</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="va">EnabledDecreaseMin</span><span class="op">(</span><span class="va">t</span><span class="op">[</span><span class="va">k</span><span class="op">]);</span></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>        <span class="kw">assert</span> <span class="va">t</span><span class="op">[</span><span class="va">k</span><span class="op">].</span><span class="va">min</span> <span class="op">&lt;=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>        <span class="va">Safety</span><span class="op">(</span><span class="va">t</span><span class="op">,</span> <span class="va">k</span><span class="op">);</span></span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>        <span class="kw">return</span><span class="op">;</span></span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>     <span class="op">}</span></span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>   <span class="op">}</span></span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>There is alternate way to think about this proof. When does timer
+will never reach state where <code>min</code> is 0 assuming safety part
+of spec (<code>Init</code> and <code>Next</code>) ? It is when timer
+stops working when <code>min</code> is displaying some number greater
+than 0 - behavior stutters infinitely afterwards. Does our spec include
+such behavior? In this behavior weakly fair condition allows us to find
+sequence of states in which <code>min</code> is decreasing to 0. But
+this is contradiction. Hence such behavior is not statisfied by our
+Spec.</p>
+<p>This is rather silly example to show temporal logic argument - there
+is no two or more processes/servers competing for fair execution. But I
+hope this small example which is written in programming language like
+syntax shows how such argument works.</p>
+</body>
+</html>

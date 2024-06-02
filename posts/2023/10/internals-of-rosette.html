@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Under the hood of Rosette</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        background-color: #ffffff;
+        color: #a0a0a0;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #a0a0a0;  padding-left: 4px; }
+    div.sourceCode
+      { color: #1f1c1b;  }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span { color: #1f1c1b; } /* Normal */
+    code span.al { color: #bf0303; background-color: #f7e6e6; font-weight: bold; } /* Alert */
+    code span.an { color: #ca60ca; } /* Annotation */
+    code span.at { color: #0057ae; } /* Attribute */
+    code span.bn { color: #b08000; } /* BaseN */
+    code span.bu { color: #644a9b; font-weight: bold; } /* BuiltIn */
+    code span.cf { color: #1f1c1b; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #924c9d; } /* Char */
+    code span.cn { color: #aa5500; } /* Constant */
+    code span.co { color: #898887; } /* Comment */
+    code span.cv { color: #0095ff; } /* CommentVar */
+    code span.do { color: #607880; } /* Documentation */
+    code span.dt { color: #0057ae; } /* DataType */
+    code span.dv { color: #1f1c1b; } /* DecVal */
+    code span.er { color: #bf0303; text-decoration: underline; } /* Error */
+    code span.ex { color: #4379a0; font-weight: bold; } /* Extension */
+    code span.fl { color: #b08000; } /* Float */
+    code span.fu { color: #644a9b; } /* Function */
+    code span.im { color: #ff5500; } /* Import */
+    code span.in { color: #b08000; } /* Information */
+    code span.kw { color: #1f1c1b; font-weight: bold; } /* Keyword */
+    code span.op { color: #1f1c1b; } /* Operator */
+    code span.ot { color: #1d2482; } /* Other */
+    code span.pp { color: #006e28; } /* Preprocessor */
+    code span.re { color: #0057ae; background-color: #e0e9f8; } /* RegionMarker */
+    code span.sc { color: #3daee9; } /* SpecialChar */
+    code span.ss { color: #ff5500; } /* SpecialString */
+    code span.st { color: #bf0303; } /* String */
+    code span.va { color: #1f1c1b; } /* Variable */
+    code span.vs { color: #bf0303; } /* VerbatimString */
+    code span.wa { color: #bf0303; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="../../../style.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<p> <a href="../../../index.html"> ↫ Home </a> </p>
+<header id="title-block-header">
+<h1 class="title">Under the hood of Rosette</h1>
+</header>
+<p>Rosette is a solver-aided language. Its <a
+href="https://docs.racket-lang.org/rosette-guide/index.html">documentation</a>
+has good overview of how it can be used. It has been used to <a
+href="https://github.com/uw-unsat/jitterbug">find bug in eBPF</a>, <a
+href="https://medium.com/@uwdb/introducing-cosette-527898504bd6">reasoning
+about SQL equivalence</a> and in <a
+href="https://emina.github.io/rosette/apps.html">many other ways</a>. I
+have covered Rosette <a
+href="../../2021/06/crux-mathematicorum-ma122-rosette.html">previously</a>
+in this blog by using it to solve a puzzle. Rosette is implemented in
+Racket which has extensive support for building programming languages.
+In this blog, we will try to peek into how Rosette works through
+following code.</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode racket"><code class="sourceCode racket"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#lang rosette/safe</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="op">(</span>define-symbolic x y <span class="kw">integer?</span><span class="op">)</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="ex">define</span><span class="fu"> </span><span class="op">(</span>double x<span class="op">)</span> <span class="op">(+</span> x x<span class="op">))</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="ex">define</span><span class="fu"> lst</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="op">(</span><span class="kw">filter</span> <span class="kw">even?</span> <span class="op">(</span><span class="kw">list</span> x y<span class="op">)))</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="ex">define</span><span class="fu"> sol</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="op">(</span>solve <span class="op">(</span><span class="kw">begin</span> <span class="op">(</span><span class="kw">assert</span> <span class="op">(&lt;</span> <span class="dv">0</span> x<span class="op">))</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>                <span class="op">(</span><span class="kw">assert</span> <span class="op">(&lt;</span> <span class="op">(</span>double x<span class="op">)</span> y<span class="op">))</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>                <span class="op">(</span><span class="kw">assert</span> <span class="op">(=</span> <span class="dv">1</span> <span class="op">(</span><span class="kw">length</span> lst<span class="op">))))))</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="op">(</span>when <span class="op">(</span>sat? sol<span class="op">)</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>  <span class="op">(</span>evaluate <span class="op">(</span><span class="kw">list</span> x y<span class="op">)</span> sol<span class="op">))</span></span></code></pre></div>
+<h3 id="syntax">Syntax</h3>
+<p>Syntax of Rosette is similar to Racket with additional definitions
+like <code>define-symbolic</code>, <code>solve</code>,
+<code>assert</code>, <code>evaluate</code> etc. Creating language which
+looks like it is breeze in Racket with help of <a
+href="https://docs.racket-lang.org/guide/syntax_module-reader.html">syntax/module-reader</a>,
+which Rosette makes use of. Rosette overrides various definitions of
+Racket to work with symbolic values. Internally these are defined with
+name identical to their Racket counterpart but prefixed with
+<code>@</code>. Above code will look like following after removing that
+masking.</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode racket"><code class="sourceCode racket"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">#lang racket</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="kw">require</span> rosette/base/adt/list<span class="op">)</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="kw">require</span> rosette/base/core/bool<span class="op">)</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="kw">require</span> rosette/base/core/numerics<span class="op">)</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="kw">require</span> rosette/base/core/real<span class="op">)</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="kw">require</span> rosette/base/form/define<span class="op">)</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="kw">require</span> rosette/query/form<span class="op">)</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="kw">require</span> rosette/query/eval<span class="op">)</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="kw">require</span> rosette/solver/solution<span class="op">)</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="op">(</span>define-symbolic x y @integer?<span class="op">)</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="ex">define</span><span class="fu"> </span><span class="op">(</span>double x<span class="op">)</span> <span class="op">(</span>@+ x x<span class="op">))</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="ex">define</span><span class="fu"> lst</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>  <span class="op">(</span>@filter @even? <span class="op">(</span>@list x y<span class="op">)))</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="ex">define</span><span class="fu"> sol</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>  <span class="op">(</span>solve <span class="op">(</span><span class="kw">begin</span> <span class="op">(</span>@assert <span class="op">(</span>@&lt; <span class="dv">0</span> x<span class="op">))</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>                <span class="op">(</span>@assert <span class="op">(</span>@&lt; <span class="op">(</span>double x<span class="op">)</span> y<span class="op">))</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>                <span class="op">(</span>@assert <span class="op">(</span>@= <span class="dv">1</span> <span class="op">(</span>@length lst<span class="op">))))))</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="op">(</span>when <span class="op">(</span>sat? sol<span class="op">)</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>  <span class="op">(</span>evaluate <span class="op">(</span>@list x y<span class="op">)</span> sol<span class="op">))</span></span></code></pre></div>
+<h3 id="semantics">Semantics</h3>
+<p>Rosette lifts some types (<code>integer?</code>,
+<code>boolean?</code> etc) so that symbolic constant can be defined for
+those. Inside Rosette these types (<code>@integer?</code>,
+<code>@boolean?</code> etc) are represented as <code>struct</code> which
+holds type specific methods like <code>type-cast</code>,
+<code>type-name</code> and solver specific methods like
+<code>solveable-default</code>, <code>solveable-range</code>. Since
+<code>@integer?</code> is exposed as <code>integer?</code> at surface
+syntax, it should work as predicate that is <code>(integer? 1)</code> or
+<code>(integer? x)</code> (<code>x</code> is symbolic integer) should
+result into true. This is achieved through <a
+href="https://docs.racket-lang.org/reference/define-struct.html#%28form._%28%28lib._racket%2Fprivate%2Fbase..rkt%29._struct-field-index%29%29">struct-index-field</a>
+which allows <code>struct</code> to be used as function.</p>
+<p>To introduce symbolic constant in Rosette
+<code>define-symbolic</code> macro is used.
+<code>(define-symbolic x integer?)</code> expands to
+<code>(define-values (x) ((make-const #'x integer?))</code>. All lifted
+definitions do as much as concrete evaluation as possible. For example
+<code>(+ 1 2)</code> evaluates to <code>3</code> whereas
+<code>(+ 1 x 3)</code> evaluates to <code>(+ 4 x)</code>. Further it
+reduces symbolic expression in canonical form by sorting subexpressions
+based on term order. Term order is natural number which accounts for
+term introduction order in program. In above program term order of
+<code>x</code> is 0 whereas it is 1 for <code>y</code>, making
+<code>(+ x y)</code> canonical form of <code>(+ y x)</code>. This makes
+SMT-Lib encoding small. While generating SMT-Lib Rosette will only
+output <code>(define-fun e1 () Int (+ 4 c0))</code> (<code>c0</code> is
+symbolic integer representing <code>x</code> in SMT-Lib) even when
+surface syntax contains both expressions <code>(+ x 4)</code> and
+<code>(+ 4 x)</code>. Another way to think about it is reasoning about
+their equivalence is pushed up at Rosette level instead of pushing down
+to SMT solvers. This allows Rosette to do some optimizations. For
+example <code>(if (= (+ x 4) (+ 4 x)) x 4)</code> reduces to
+<code>x</code> contrast that to naive SMT-Lib encoding which will
+generate something like following</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode racket"><code class="sourceCode racket"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">(</span>declare-fun c0 <span class="op">()</span> Int<span class="op">)</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="op">(</span>define-fun e1 <span class="op">()</span> Int <span class="op">(+</span> c0 <span class="dv">4</span><span class="op">))</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="op">(</span>define-fun e2 <span class="op">()</span> Int <span class="op">(+</span> <span class="dv">4</span> c0<span class="op">))</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="op">(</span>define-fun e3 <span class="op">()</span> Int <span class="op">(</span>ite <span class="op">(=</span> e1 e2<span class="op">)</span> c0 <span class="dv">4</span><span class="op">))</span></span></code></pre></div>
+<p>Practically it means SMT-Lib generated by Rosette is easy to read and
+understand as it strips away various artificial encodings.</p>
+<p>In presence of <code>if</code> expression program can branch into
+different paths depending on predicate. If predicate is concrete value
+or can be optimized away to it, it is not problem otherwise Rosette uses
+<code>union</code> to encode it. <code>union</code> is list of predicate
+and expression pair. In our code <code>lst</code> is a union as
+<code>filter</code> uses <code>if</code> internally, <code>even?</code>
+being its predicate. This is how <code>lst union</code> looks like.</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode racket"><code class="sourceCode racket"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>&gt;&gt; <span class="op">(</span>union-contents lst<span class="op">)</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="kw">list</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a> <span class="op">(</span><span class="kw">list</span> <span class="op">(</span>&amp;&amp; <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> x <span class="dv">2</span><span class="op">))</span> <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> y <span class="dv">2</span><span class="op">)))</span> x y<span class="op">)</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a> <span class="op">(</span><span class="kw">list</span> <span class="op">(</span>&amp;&amp; <span class="op">(!</span> <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> x <span class="dv">2</span><span class="op">)))</span> <span class="op">(!</span> <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> y <span class="dv">2</span><span class="op">)))))</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a> <span class="op">(</span><span class="kw">list</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="op">(</span>|| <span class="op">(</span>&amp;&amp; <span class="op">(!</span> <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> x <span class="dv">2</span><span class="op">)))</span> <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> y <span class="dv">2</span><span class="op">)))</span> </span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>      <span class="op">(</span>&amp;&amp; <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> x <span class="dv">2</span><span class="op">))</span> <span class="op">(!</span> <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> y <span class="dv">2</span><span class="op">)))))</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="op">(</span>ite* <span class="op">(</span>⊢ <span class="op">(</span>&amp;&amp; <span class="op">(!</span> <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> x <span class="dv">2</span><span class="op">)))</span> <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> y <span class="dv">2</span><span class="op">)))</span> y<span class="op">)</span> </span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>        <span class="op">(</span>⊢ <span class="op">(</span>&amp;&amp; <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> x <span class="dv">2</span><span class="op">))</span> <span class="op">(!</span> <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> y <span class="dv">2</span><span class="op">))))</span> x<span class="op">))))</span></span></code></pre></div>
+<p>In plain english, it is saying that</p>
+<ul>
+<li>If <code>x</code> and <code>y</code> are both even then
+<code>lst</code> is <code>(list x y)</code></li>
+<li>If <code>x</code> and <code>y</code> are both odd then
+<code>lst</code> is <code>(list)</code></li>
+<li>If <code>x</code> is even and <code>y</code> is odd then
+<code>lst</code> is <code>(list x)</code></li>
+<li>If <code>x</code> is odd and <code>y</code> is even then
+<code>lst</code> is <code>(list y)</code></li>
+</ul>
+<p>Rosette maintains that predicates of union are mutually exclusive and
+union length is within polynomial bound of program size. From user
+perspective <code>lst</code> is list so they should able to apply list
+functions on it.</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode racket"><code class="sourceCode racket"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="op">(</span>union-contents <span class="op">(</span><span class="kw">cons</span> <span class="dv">1</span> lst<span class="op">))</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="kw">list</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a> <span class="op">(</span><span class="kw">list</span> <span class="op">(</span>&amp;&amp; <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> x <span class="dv">2</span><span class="op">))</span> <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> y <span class="dv">2</span><span class="op">)))</span> <span class="dv">1</span> x y<span class="op">)</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a> <span class="op">(</span><span class="kw">list</span> <span class="op">(</span>&amp;&amp; <span class="op">(!</span> <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> x <span class="dv">2</span><span class="op">)))</span> <span class="op">(!</span> <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> y <span class="dv">2</span><span class="op">))))</span> <span class="dv">1</span><span class="op">)</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a> <span class="op">(</span><span class="kw">list</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="op">(</span>|| <span class="op">(</span>&amp;&amp; <span class="op">(!</span> <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> x <span class="dv">2</span><span class="op">)))</span> <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> y <span class="dv">2</span><span class="op">)))</span> </span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>      <span class="op">(</span>&amp;&amp; <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> x <span class="dv">2</span><span class="op">))</span> <span class="op">(!</span> <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> y <span class="dv">2</span><span class="op">)))))</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="op">(</span>ite* <span class="op">(</span>⊢ <span class="op">(</span>&amp;&amp; <span class="op">(!</span> <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> x <span class="dv">2</span><span class="op">)))</span> <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> y <span class="dv">2</span><span class="op">)))</span> <span class="dv">1</span> y<span class="op">)</span> </span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>        <span class="op">(</span>⊢ <span class="op">(</span>&amp;&amp; <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> x <span class="dv">2</span><span class="op">))</span> <span class="op">(!</span> <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> y <span class="dv">2</span><span class="op">))))</span> <span class="dv">1</span> x<span class="op">))))</span></span></code></pre></div>
+<p>Sweet, Rosette goes under each guards (predicates) of
+<code>union</code> and applies <code>cons</code> to underlying
+expression. Finally we move to <code>solve</code> part of program.
+Whenever Rosette sees <code>assert</code> statement it adds
+corresponding boolean expression in <code>vc</code> parameter. In our
+program after last <code>assert</code> statement, <code>vc</code>
+contains following <code>asserts</code> that need to be checked. Since
+we haven’t used any <code>assume</code> in our program
+<code>assumes</code> in <code>vc</code> is trivial expression
+<code>#t</code>.</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode racket"><code class="sourceCode racket"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="op">(</span>&amp;&amp; <span class="op">(</span>&amp;&amp; <span class="op">(</span>|| <span class="op">(</span>&amp;&amp; <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> x <span class="dv">2</span><span class="op">))</span> <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> y <span class="dv">2</span><span class="op">)))</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>            <span class="op">(</span>&amp;&amp; <span class="op">(!</span> <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> x <span class="dv">2</span><span class="op">)))</span> <span class="op">(!</span> <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> y <span class="dv">2</span><span class="op">))))</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>            <span class="op">(</span>|| <span class="op">(</span>&amp;&amp; <span class="op">(!</span> <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> x <span class="dv">2</span><span class="op">)))</span> <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> y <span class="dv">2</span><span class="op">)))</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>                <span class="op">(</span>&amp;&amp; <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> x <span class="dv">2</span><span class="op">))</span> <span class="op">(!</span> <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> y <span class="dv">2</span><span class="op">))))))</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>        <span class="op">(</span>&amp;&amp; <span class="op">(&lt;</span> <span class="dv">0</span> x<span class="op">)</span> <span class="op">(&lt;</span> <span class="op">(+</span> x x<span class="op">)</span> y<span class="op">)))</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">(=</span> <span class="dv">1</span> <span class="op">(</span>ite* <span class="op">(</span>⊢ <span class="op">(</span>&amp;&amp; <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> x <span class="dv">2</span><span class="op">))</span> <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> y <span class="dv">2</span><span class="op">)))</span> <span class="dv">2</span><span class="op">)</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>               <span class="op">(</span>⊢ <span class="op">(</span>&amp;&amp; <span class="op">(!</span> <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> x <span class="dv">2</span><span class="op">)))</span> <span class="op">(!</span> <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> y <span class="dv">2</span><span class="op">))))</span> <span class="dv">0</span><span class="op">)</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>               <span class="op">(</span>⊢ <span class="op">(</span>|| <span class="op">(</span>&amp;&amp; <span class="op">(!</span> <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> x <span class="dv">2</span><span class="op">)))</span> <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> y <span class="dv">2</span><span class="op">)))</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>                      <span class="op">(</span>&amp;&amp; <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> x <span class="dv">2</span><span class="op">))</span> <span class="op">(!</span> <span class="op">(=</span> <span class="dv">0</span> <span class="op">(</span><span class="kw">remainder</span> y <span class="dv">2</span><span class="op">)))))</span> <span class="dv">1</span><span class="op">))))</span></span></code></pre></div>
+<p>Notice like <code>cons</code> example above, Rosette strips away
+<code>length</code> function by applying it to expressions of
+<code>union</code>. Combination of <code>union</code> and concrete
+evaluation make it possible for Rosette to avoid encoding list and its
+associated axioms in SMT-Lib. On syntax level, Rosette can handle
+various ADT like <code>struct</code>, <code>box</code>,
+<code>vector</code> etc. But when Rosette emits SMT-Lib it only deals
+with simple data types like <code>Int</code>, <code>Bool</code>,
+<code>BitVec</code> of SMT-Lib which is possible due to representation
+of branch using <code>union</code> and enough concrete evaluation of
+definitions. Inside <code>solve</code>, Rosette encodes <code>vc</code>
+to SMT-Lib, send it to SMT solver and read result back.</p>
+</body>
+</html>

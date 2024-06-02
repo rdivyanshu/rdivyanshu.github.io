@@ -40,6 +40,7 @@ $endif$
 $for(include-before)$
 $include-before$
 $endfor$
+<p> <a href="../../../index.html"> ↫ Home </a> </p>
 $if(title)$
 <header id="title-block-header">
 <h1 class="title">$title$</h1>
@@ -68,7 +69,6 @@ $endif$
 $table-of-contents$
 </nav>
 $endif$
-<p> <a href="index.html"> ↫ Home </a> </p>
 $body$
 $for(include-after)$
 $include-after$

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Solving a mathemattic problem using Rosette</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        background-color: #ffffff;
+        color: #a0a0a0;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #a0a0a0;  padding-left: 4px; }
+    div.sourceCode
+      { color: #1f1c1b;  }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span { color: #1f1c1b; } /* Normal */
+    code span.al { color: #bf0303; background-color: #f7e6e6; font-weight: bold; } /* Alert */
+    code span.an { color: #ca60ca; } /* Annotation */
+    code span.at { color: #0057ae; } /* Attribute */
+    code span.bn { color: #b08000; } /* BaseN */
+    code span.bu { color: #644a9b; font-weight: bold; } /* BuiltIn */
+    code span.cf { color: #1f1c1b; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #924c9d; } /* Char */
+    code span.cn { color: #aa5500; } /* Constant */
+    code span.co { color: #898887; } /* Comment */
+    code span.cv { color: #0095ff; } /* CommentVar */
+    code span.do { color: #607880; } /* Documentation */
+    code span.dt { color: #0057ae; } /* DataType */
+    code span.dv { color: #1f1c1b; } /* DecVal */
+    code span.er { color: #bf0303; text-decoration: underline; } /* Error */
+    code span.ex { color: #4379a0; font-weight: bold; } /* Extension */
+    code span.fl { color: #b08000; } /* Float */
+    code span.fu { color: #644a9b; } /* Function */
+    code span.im { color: #ff5500; } /* Import */
+    code span.in { color: #b08000; } /* Information */
+    code span.kw { color: #1f1c1b; font-weight: bold; } /* Keyword */
+    code span.op { color: #1f1c1b; } /* Operator */
+    code span.ot { color: #1d2482; } /* Other */
+    code span.pp { color: #006e28; } /* Preprocessor */
+    code span.re { color: #0057ae; background-color: #e0e9f8; } /* RegionMarker */
+    code span.sc { color: #3daee9; } /* SpecialChar */
+    code span.ss { color: #ff5500; } /* SpecialString */
+    code span.st { color: #bf0303; } /* String */
+    code span.va { color: #1f1c1b; } /* Variable */
+    code span.vs { color: #bf0303; } /* VerbatimString */
+    code span.wa { color: #bf0303; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="../../../style.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<p> <a href="../../../index.html"> ↫ Home </a> </p>
+<header id="title-block-header">
+<h1 class="title">Solving a mathemattic problem using Rosette</h1>
+</header>
+<p>Would n’t it be interesting if programming language is aided with SMT
+solvers. <a
+href="https://docs.racket-lang.org/rosette-guide/index.html">Rosette</a>
+is such language. Using SMT solvers Rosette can <a
+href="https://docs.racket-lang.org/rosette-guide/ch_essentials.html#%28part._sec~3averify%29">verify</a>
+that programs comply their specifications, <a
+href="https://docs.racket-lang.org/rosette-guide/ch_essentials.html#%28part._sec~3asynthesize%29">synthesis</a>
+programs given specifications, find counter examples when program
+doesn’t meet its specification and <a
+href="https://docs.racket-lang.org/rosette-guide/ch_essentials.html#%28part._sec~3asolve%29">solve
+puzzles</a>.</p>
+<p>In this blogpost, I will be using Rosette to solve a puzzle which is
+taken from <a
+href="https://cms.math.ca/wp-content/uploads/2021/06/CRUXv47n5-b.pdf">Crux
+Volume 47, Issue 5</a>.</p>
+<p><img src="../../../img/puzzle.png" /></p>
+<p>Let’s fire up <a href="https://racket-lang.org/">Dr Racket</a> where
+Rosette is available, give language directive to Racket and import a
+Rosette module.</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode racket"><code class="sourceCode racket"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#lang rosette</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="kw">require</span> rosette/lib/angelic<span class="op">)</span></span></code></pre></div>
+<p>Next lets define all professions mentioned in the puzzle as elements
+of a list.</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode racket"><code class="sourceCode racket"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="ex">define</span><span class="fu"> professions </span><span class="op">(</span><span class="kw">list</span> &#39;baker &#39;carpenter &#39;driver &#39;plumber<span class="op">))</span></span></code></pre></div>
+<p>Now we will assign professions to persons. But instead of traditional
+assignment, We will say profession of a person is any one within list.
+<code>choose*</code> method from <code>angelic</code> module allows us
+to do this. A note on encoding I am using variables for persons and
+symbols for professions.</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode racket"><code class="sourceCode racket"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="ex">define</span><span class="fu"> baker </span><span class="op">(</span><span class="kw">apply</span> choose* profession<span class="op">))</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="ex">define</span><span class="fu"> carpenter </span><span class="op">(</span><span class="kw">apply</span> choose* profession<span class="op">))</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="ex">define</span><span class="fu"> driver </span><span class="op">(</span><span class="kw">apply</span> choose* profession<span class="op">))</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="ex">define</span><span class="fu"> plumber </span><span class="op">(</span><span class="kw">apply</span> choose* profession<span class="op">))</span></span></code></pre></div>
+<p>Let us list down constraints (fixed) which are true. Each person has
+different profession and person name don’t coincide with their
+profession. Even though we have n’t assigned profession to person in
+traditional sense, first constraint instructs that assigned values are
+all distinct.</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode racket"><code class="sourceCode racket"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="ex">define</span><span class="fu"> </span><span class="op">(</span>f-constraints<span class="op">)</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="op">(</span><span class="kw">list</span> <span class="op">(</span>distinct? baker driver carpenter plumber<span class="op">)</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>        <span class="op">(</span><span class="kw">not</span> <span class="op">(</span><span class="kw">equal?</span> baker &#39;baker<span class="op">))</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>        <span class="op">(</span><span class="kw">not</span> <span class="op">(</span><span class="kw">equal?</span> driver &#39;driver<span class="op">))</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>        <span class="op">(</span><span class="kw">not</span> <span class="op">(</span><span class="kw">equal?</span> carpenter &#39;carpenter<span class="op">))</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>        <span class="op">(</span><span class="kw">not</span> <span class="op">(</span><span class="kw">equal?</span> plumber &#39;plumber<span class="op">))))</span></span></code></pre></div>
+<p>Next note down constraints (variable) which may or may not hold as
+some statements might be false.</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode racket"><code class="sourceCode racket"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="ex">define</span><span class="fu"> </span><span class="op">(</span>v-constraints<span class="op">)</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="op">(</span><span class="kw">list</span> <span class="op">(</span><span class="kw">equal?</span> baker &#39;plumber<span class="op">)</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>        <span class="op">(</span><span class="kw">equal?</span> driver &#39;baker<span class="op">)</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>        <span class="op">(!</span> <span class="op">(</span><span class="kw">equal?</span> carpenter &#39;plumber<span class="op">))</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        <span class="op">(!</span> <span class="op">(</span><span class="kw">equal?</span> plumber &#39;carpenter<span class="op">))))</span></span></code></pre></div>
+<p>Before proceeding further we need helper method to find who is
+assigned given profession in solution once assignment is done by SMT
+solver. <code>profession</code> is an element of
+<code>professions</code> and <code>sol</code> is solution returned by
+SMT solver. <code>evaluate</code> find assignement of variable in
+solution.</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode racket"><code class="sourceCode racket"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="ex">define</span><span class="fu"> </span><span class="op">(</span>assigned profession sol<span class="op">)</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="op">(</span>first <span class="op">(</span><span class="kw">filter</span> <span class="op">(</span><span class="kw">lambda</span> <span class="op">(</span>p<span class="op">)</span> <span class="op">(</span><span class="kw">equal?</span> <span class="op">(</span>evaluate p sol<span class="op">)</span> profession<span class="op">))</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>          <span class="op">(</span><span class="kw">list</span> baker carpenter driver plumber<span class="op">))))</span></span></code></pre></div>
+<p>We are now at crux of our small program where we write function to
+fix assignment of person (variable) to profession (symbol) with help of
+SMT solver which is invoked using <a
+href="https://docs.racket-lang.org/rosette-guide/ch_syntactic-forms_rosette.html#%28def._%28%28lib._rosette%2Fquery%2Fform..rkt%29._solve%2B%29%29">solve+</a>.
+First we will find assignment with constraint given as parameter. If no
+assignment exists due constraints being too restricting we return empty
+list else we try to find another solution where <code>driver</code>
+profession is not assigned to same person as first solution. If such
+assignment exists we return these two solutions in list otherwise we
+return only one solution in list.</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode racket"><code class="sourceCode racket"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="ex">define</span><span class="fu"> </span><span class="op">(</span>m-solve constraint<span class="op">)</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="op">(</span><span class="ex">define</span><span class="fu"> s-solve </span><span class="op">(</span>solve+<span class="op">))</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="op">(</span><span class="kw">let</span> <span class="op">([</span>sol <span class="op">(</span>s-solve constraint<span class="op">)])</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="op">(</span><span class="kw">if</span> <span class="op">(</span>sat? sol<span class="op">)</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>        <span class="op">(</span><span class="kw">letrec</span> <span class="op">([</span>a-driver <span class="op">(</span>assigned &#39;driver sol<span class="op">)]</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>                 <span class="op">[</span>n-sol <span class="op">(</span>s-solve <span class="op">(</span><span class="kw">not</span> <span class="op">(</span><span class="kw">equal?</span> &#39;driver a-driver<span class="op">)))])</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>            <span class="op">(</span><span class="kw">cons</span> sol <span class="op">(</span><span class="kw">if</span> <span class="op">(</span>sat? n-sol<span class="op">)</span> <span class="op">(</span><span class="kw">list</span> n-sol<span class="op">)</span> <span class="op">(</span><span class="kw">list</span><span class="op">))))</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        <span class="op">(</span><span class="kw">list</span><span class="op">))))</span></span></code></pre></div>
+<p>Finally let us solve the puzzle. We iterate through 0 to 4 assuming
+it is number of true statements which is anded with fixed constraints
+then asking for solution using <code>m-solve</code>. If only one
+solution exists we have found what we are looking for. Once we find that
+solution we ask profession assigned to each person. As you can see
+answer to our little puzzle is <code>baker</code>.</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode racket"><code class="sourceCode racket"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="ex">define</span><span class="fu"> a-solutions </span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="op">(</span><span class="kw">filter</span> <span class="op">(</span><span class="kw">lambda</span> <span class="op">(</span>s<span class="op">)</span> <span class="op">(=</span> <span class="op">(</span><span class="kw">length</span> s<span class="op">)</span> <span class="dv">1</span><span class="op">))</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>            <span class="op">(</span>for/list <span class="op">([</span>t <span class="op">(</span>range <span class="dv">5</span><span class="op">)])</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>                <span class="op">(</span>m-solve </span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>                  <span class="op">(</span><span class="kw">and</span> <span class="op">(</span><span class="kw">apply</span> &amp;&amp; <span class="op">(</span>f-constraints<span class="op">))</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>                       <span class="op">(=</span> t <span class="op">(</span><span class="kw">length</span> <span class="op">(</span><span class="kw">filter</span> identity <span class="op">(</span>v-constraints<span class="op">)))))))))</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="kw">length</span> a-solutions<span class="op">)</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="ex">define</span><span class="fu"> sol </span><span class="op">(</span>first <span class="op">(</span>first a-solutions<span class="op">)))</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="op">(</span>evaluate <span class="op">(</span><span class="kw">list</span> baker carpenter driver plumber<span class="op">)</span> sol<span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode default"><code class="sourceCode default"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>Welcome to DrRacket, version 8.0 [cs].</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>Language: rosette, with debugging; memory limit: 128 MB.</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>1</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>&#39;(driver plumber carpenter baker)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>&gt; </span></code></pre></div>
+<p>Complete source code can be found <a
+href="https://gist.github.com/rdivyanshu/41635e6d9075eac29e677dbfb025f18f">here</a>.</p>
+</body>
+</html>
