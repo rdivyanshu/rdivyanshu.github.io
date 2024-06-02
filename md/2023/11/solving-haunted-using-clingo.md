@@ -4,7 +4,7 @@ title: Uncovering ghouls using Answer Set Programming
 
 Recently I came across this nice puzzle - [Haunted](https://krazydad.com/haunted/). These days
 my impulse when presented with puzzle is throw Answer Set Programming on it. To get idea
-of ASP follow [this blog](./asp.html) which solves another puzzle which has somewhat
+of ASP follow [this blog](../../2023/07/solving-hitori-using-clingo.md) which solves another puzzle which has somewhat
 straightforward encoding in ASP.
 
 ![](../../../img/haunted.png)
