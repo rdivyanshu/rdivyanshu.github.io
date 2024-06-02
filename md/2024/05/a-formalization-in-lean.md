@@ -1,16 +1,18 @@
-# A Formalization in Lean
+---   
+title: A Formalization in Lean
+---
 
 ### Problem
 Consider the following problem.
 
-![](./OC588.png)
+![](../../../img/OC588.png)
 
 Its solution is published in [Crux Volume 49, Issue 1](https://cms.math.ca/publications/crux/issue/?volume=49&issue=1). 
 
 ### Formalization
 Here is Lean formalization of it.
 
-```
+~~~{.default}
 import Mathlib.Algebra.Ring.Defs
 import Mathlib.Data.Finite.Defs
 import Mathlib.Data.Set.Finite
@@ -100,4 +102,4 @@ theorem crux_oc588 {R: Type*} [Ring R] [Finite R]
       exact absurd (Nat.sub_one_lt_of_le (Nat.zero_lt_of_lt hm₃) Nat.le.refl)
                    (not_lt_of_le this)
 
-```
+~~~

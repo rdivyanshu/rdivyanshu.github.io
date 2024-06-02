@@ -1,4 +1,6 @@
-# Verifying using temporal logic of action in Dafny 
+---   
+title: Verifying using temporal logic of action in Dafny 
+---
 
 In [previous blog](https://rdivyanshu.github.io/temporal.html) we looked into why TLA+ specification enforces SI (stuttering insensitivity) and 
 how verifying liveness assertion required us to add fairness condition in spec. In this blog
@@ -12,7 +14,7 @@ stuttering insensitivity requirement of temporal logic of action. Formally step 
 `s` if there exists state `e` such that `st(s, e)` is true. There is easlier way to say so for DecreaseMin 
 step that is min is greater than 0.
 
-```
+~~~{.dafny}
 datatype State = State(min: int)
 
 predicate Init(s: State){
@@ -34,7 +36,7 @@ predicate Stutter(s: State, t: State){
 predicate Next(s: State, t: State){
   DecreaseMin(s, t) || Stutter(s, t)
 }
-```
+~~~
 
 TLA+ avoids explicit mention of index of state in behavior. In Dafny we will be using infinite map `imap` 
 to model behavior where value at key `n` is `nth` state. That is why we have additional requirement in spec that 
@@ -44,7 +46,7 @@ weakly fair if `st` is enabled forever then eventually `st` will happen. There a
 weakly fair, equivalent to this definition. Some triggers are mentioned in code below which helps SMT solvers to 
 use quantifiers in guided manner but can be ignored for this discussion.
 
-```
+~~~{.dafny}
 function Increase(i: nat): nat {
   i+1
 }
@@ -69,13 +71,13 @@ ghost predicate Spec(t: imap<nat, State>){
  && (forall i : nat {:trigger Identity(i)}:: Next(t[i], t[i+1]))
  && WeakFairness(t)
 }
-```
+~~~
 
 We need two safety properties to prove liveness property. First is `min` is always greater than
 or equal to 0. And second is `min` is non increasing in behavior. I have omitted proof but it 
 can be seen [here](https://gist.github.com/rdivyanshu/f2b0a03c6ceeb7659ec6bf9db91e3c86).
 
-```
+~~~{.dafny}
 lemma Safety(t: imap<nat, State>, k: nat)
   requires Spec(t)
   ensures t[k].min >= 0
@@ -85,7 +87,7 @@ lemma SafetyDecreasing(t: imap<nat, State>, m: nat, n: nat)
   requires Spec(t)
   requires m <= n
   ensures t[m].min >= t[n].min
-```
+~~~
 
 To prove that timer will eventually reach 0 we start with initial state and try to convince Dafny that we can always 
 find state `m` (I am using index of state as synonyms for that state) in which `min` is 0. There are two cases to consider 
@@ -97,7 +99,7 @@ Note that it just says that `min` will decrease between state `k` and `k+1`. It 
 using safety property `SafetyDecreasing`. Since `min` is finite positive number applying this argument again and again we 
 will reach state `m` where `min` is 0.
 
-```
+~~~{.dafny}
 lemma ExistsHelperLemma(t: imap<nat, State>, m: nat)
   requires forall i : nat :: i in t
   requires !(forall j : nat :: j >= m ==> EnabledDecreaseMin(t[j]))
@@ -140,7 +142,7 @@ lemma Eventually(t: imap<nat, State>)
      }
    }
 }
-```
+~~~
 There is alternate way to think about this proof. When does timer will never reach state where `min` is 0 assuming 
 safety part of spec (`Init` and `Next`) ? It is when timer stops working when `min` is displaying some number greater 
 than 0 - behavior stutters infinitely afterwards. Does our spec include such behavior? In this behavior weakly fair condition
