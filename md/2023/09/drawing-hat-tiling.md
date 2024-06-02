@@ -1,4 +1,6 @@
-# Drawing hat tiling using Racket
+---   
+title: Drawing hat tiling using Racket
+---
 
 ### Introduction  
  _Note: This blogpost is heavily inspired from [this wolfram community article](https://community.wolfram.com/groups/-/m/t/2858759)_. 
@@ -7,7 +9,7 @@ Whether a single geometrical shape exists that can tile plane aperiodically was 
 shapes we know answer is affirmative. In this blog we will draw tiling of plane using hat and its reflection. Hat is a ploykite with `13` components, 
 `3` different edge lengths and interior angles multiples of `30` degree. Using metapict library, let's draw canonical hat and its reflection.  
 
-```
+~~~{.racket}
 #lang racket
 (require metapict)
 
@@ -53,21 +55,20 @@ shapes we know answer is affirmative. In this blog we will draw tiling of plane 
 
 (with-window (window -7 7 -7 7) (draw (H-edges->curve (pt 0 0) 0 hat)))
 (with-window (window -7 7 -7 7) (draw (H-edges->curve (pt 0 0) 0 flipped-hat)))
-``` 
+~~~
 
 When above code is run, it will draw shapes shown below minus grid and interior being colored blue.
 
-![](./hat.png)
+![](../../../img/hat.png)
 
 ### Substitution Tiling 
 
 Larger and larger area of plane can be tiled using [substitution tiling](https://en.wikipedia.org/wiki/Substitution_tiling). In case of hat tiling, substitution is given in 
 terms of metatiles `H`, `T`, `P` and `F`. Let's look at them and code used to draw them.  
 
-![](./metatile.png)
+![](../../../img/metatile.png)
 
-
-```
+~~~{.racket}
 (struct M-edge (turn) #:transparent)
 
 (struct X+ M-edge () #:transparent)
@@ -127,21 +128,20 @@ terms of metatiles `H`, `T`, `P` and `F`. Let's look at them and code used to dr
 (with-window (window -20 20 -20 20) (draw (M-edges->curve (pt 0 0) 0 meta-T)))
 (with-window (window -20 20 -20 20) (draw (M-edges->curve (pt 0 0) 0 meta-P)))
 (with-window (window -20 20 -20 20) (draw (M-edges->curve (pt 0 0) 0 meta-F)))
-
-``` 
+~~~
 
 Notice that there is mismatch in number between edges in picture and code. Also there are two variants, 
 positive and negative, of edge types (`X+`, `X-` etc) except `L`. Why such oddities will be clear when one
 looks how hats are projected into these metatiles.
 
-![](./projection-hat.png)
+![](../../../img/projection-hat.png)
 
 Edges of metatiles are deconstructed into parts and type and attribute (positive or negative) are given to them. Positive or 
 negative label depends on whether parts of hats are bulging out or deflating in around metatile edges. Substitution rule should 
 line up `A+` and `A-`, `B+` and `B-`, `X+` and `X-` so on. This is required so that no gap remains in tiling. Next let's look at 
 substitution rules of metatile `H`, `T`, `P` and `F` respectively.
 
-![](./extend-metatile.png)
+![](../../../img/extend-metatile.png)
 
 Since projection of hats in metatiles is not invariant under rotation but `3` metatiles are, substitution rule should also
 specify orientation of metatiles. In our case this orientation is specified by local origin of metatile.
@@ -154,7 +154,7 @@ Idea is if we travel along these edges from origin we arrive at point which is l
 that attributes (`+` / `-`) of `M-edge` does n't matter in translation vector as `+` and `-` of same type are always lined up. Replacing 
 `X+` with `X-` (or any other such pairing) or vice versa makes no difference.
 
-```
+~~~{.racket}
 (struct p-meta
   (meta turn dist) #:transparent)
 
@@ -175,18 +175,17 @@ that attributes (`+` / `-`) of `M-edge` does n't matter in translation vector as
         (p-meta meta-P  3 (list (F- 1) (X+ 0) (B- 1) (X- 1)
                                 (X+ 0) (B- 1) (X- 1) (X+ 2)
                                 (L 2) (X- 2)))))
-```
+~~~
 
 Picture below shows how translation of `H` metatiles are calculated using `M-edges`. Notice that first and
 second `H` metatile has same local origin. Second `H` metatile (bottom one) is rotated by `120` degree clockwise (`-2 * 60`). 
 
-![](./H-origin.png)
+![](../../../img/H-origin.png)
 
 We now need to write `substitute-many` so that we can call it successively to get bigger and bigger substitution. To achieve this
 we need substitution rules for `M-edges` for fixing `dist` which is given by `M-edge-reps`.
 
-
-```
+~~~{.racket}
 (define (M-edge-reps e)
   (let ([turn (M-edge-turn e)])
     (cond
@@ -230,10 +229,9 @@ we need substitution rules for `M-edges` for fixing `dist` which is given by `M-
 
 (define (substitute-many p-metatiles)
   (apply append (map substitute p-metatiles)))
-
-```
+~~~
 
 We have all machinery ready for hat tiling. Code is listed [here](https://gist.github.com/rdivyanshu/2d71e604917aa4893a701ca7f71c67b4)
 which also includes functions to project hats into metatiles, which is not covered here.  
 
-![](./Hat-tiling.png)
+![](../../../img/Hat-tiling.png)

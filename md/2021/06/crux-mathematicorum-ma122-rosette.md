@@ -93,7 +93,7 @@ Finally let us solve the puzzle. We iterate through 0 to 4 assuming it is number
 (evaluate (list baker carpenter driver plumber) sol)
 ~~~
 
-~~~{.racket}
+~~~{.default}
 Welcome to DrRacket, version 8.0 [cs].
 Language: rosette, with debugging; memory limit: 128 MB.
 1
