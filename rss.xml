@@ -4,10 +4,11 @@
  <title>Blogs</title>
  <link>https://rdivyanshu.github.io</link>
  <description>Divyanshu Ranjan's blog</description>
- <lastBuildDate>2024-06-03T19:20:11+05:30</lastBuildDate>
- <pubDate>2024-06-03T19:20:11+05:30</pubDate>
+ <lastBuildDate>2024-06-03T19:42:53+05:30</lastBuildDate>
+ <pubDate>2024-06-03T19:42:53+05:30</pubDate>
  <ttl>1800</ttl>
  <item>
+  <title>A Formalization in Lean</title>
   <description><![CDATA[<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
 <head>
@@ -97,11 +98,11 @@
     code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
   </style>
   <link rel="stylesheet" href="../../../style.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
 </head>
 <body>
-<header id="title-block-header">
-<h1 class="title">A Formalization in Lean</h1>
-</header>
 <h3 id="problem">Problem</h3>
 <p>Consider the following problem.</p>
 <p><img src="https://rdivyanshu.github.io/img/OC588.png" /></p>
@@ -203,6 +204,7 @@ class="sourceCode default"><code class="sourceCode default"><span id="cb1-1"><a 
 </html>]]></description>
  </item>
  <item>
+  <title>Verifying using temporal logic of action in Dafny </title>
   <description><![CDATA[<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
 <head>
@@ -228,11 +230,11 @@ class="sourceCode default"><code class="sourceCode default"><span id="cb1-1"><a 
     .display.math{display: block; text-align: center; margin: 0.5rem auto;}
   </style>
   <link rel="stylesheet" href="../../../style.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
 </head>
 <body>
-<header id="title-block-header">
-<h1 class="title">Verifying using temporal logic of action in Dafny</h1>
-</header>
 <p>In <a
 href="https://rdivyanshu.github.io/posts/2023/08/stuttering-steps-in-tla.html">previous
 blog</a> we looked into why TLA+ specification enforces SI (stuttering
@@ -397,6 +399,7 @@ syntax shows how such argument works.</p>
 </html>]]></description>
  </item>
  <item>
+  <title>Uncovering ghouls using Answer Set Programming</title>
   <description><![CDATA[<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
 <head>
@@ -486,11 +489,11 @@ syntax shows how such argument works.</p>
     code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
   </style>
   <link rel="stylesheet" href="../../../style.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
 </head>
 <body>
-<header id="title-block-header">
-<h1 class="title">Uncovering ghouls using Answer Set Programming</h1>
-</header>
 <p>Recently I came across this nice puzzle - <a
 href="https://krazydad.com/haunted/">Haunted</a>. These days my impulse
 when presented with puzzle is throw Answer Set Programming on it. To get

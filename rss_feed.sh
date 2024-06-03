@@ -14,7 +14,8 @@ echo " <pubDate>$(date --iso-8601=seconds)</pubDate>"
 echo " <ttl>1800</ttl>"
 for f in $(find mds/ -type f | sort -r | head -n 3); do
   echo " <item>"
-  echo "  <description><![CDATA[$(pandoc -s -f markdown+fenced_code_blocks --lua-filter ./relative_path_fix.lua --to=html5 --css=../../../style.css $f)]]></description>"
+  echo "  <title>$(awk 'NR == 2 { print substr($0, 8) }' $f)</title>"
+  echo "  <description><![CDATA[$(pandoc -s -f markdown+fenced_code_blocks --lua-filter ./rss.lua --to=html5 --css=../../../style.css --template default-rss.html5 $f)]]></description>"
   echo " </item>"
 done
 cat <<EOF
