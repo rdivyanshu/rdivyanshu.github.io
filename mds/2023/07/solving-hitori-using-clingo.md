@@ -1,5 +1,7 @@
 ---   
 title: Encoding Hitori in Answer Set Programming
+date-meta: 2023-07-08
+description-meta: How to encode puzzle in answer set programming ?
 ---
 
 [Hitori](https://www.nikoli.co.jp/en/puzzles/hitori/) is logic puzzle with goal to black out some cells such that

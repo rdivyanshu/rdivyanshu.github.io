@@ -1,5 +1,7 @@
 ---   
 title: Drawing hat tiling using Racket
+date-meta: 2023-09-20
+description-meta: Hats! Hats! Substitution tiling in racket
 ---
 
 ### Introduction  

@@ -1,5 +1,7 @@
 ---   
 title: Another verified program in Dafny
+date-meta: 2023-04-25
+description-meta: Let's write next permutation algorithm in Dafny
 ---
 
 Permutations of multiset can be generated in lexicographical order. Wikipedia has description

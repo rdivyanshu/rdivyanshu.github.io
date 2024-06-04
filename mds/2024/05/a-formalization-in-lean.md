@@ -1,5 +1,7 @@
 ---   
 title: A Formalization in Lean
+date-meta: 2024-04-24
+description-meta: Let's formalization olympiad problem in Lean
 ---
 
 ### Problem

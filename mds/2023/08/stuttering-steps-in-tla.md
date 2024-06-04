@@ -1,5 +1,7 @@
 ---   
 title: Stuttering Steps and Temporal Formulas in TLA+
+date-meta: 2023-08-11
+description-meta: Why TLA+ insists on stuttering steps ?
 ---
 
 Let's say you want to specify Timer in `TLA+` which counts down `5` minutes of time.

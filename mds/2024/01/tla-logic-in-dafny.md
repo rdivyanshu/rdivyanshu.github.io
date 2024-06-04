@@ -1,5 +1,7 @@
 ---   
-title: Verifying using temporal logic of action in Dafny 
+title: Verifying using temporal logic of action in Dafny
+date-meta: 2024-01-25
+description-meta: How to write and proof temporal logic statements in Dafny ?
 ---
 
 In [previous blog](../../2023/08/stuttering-steps-in-tla.html) we looked into why TLA+ specification enforces SI (stuttering insensitivity) and 

@@ -1,5 +1,7 @@
 ---   
 title: Solving a mathemattic problem using Rosette
+date-meta: 2021-06-30
+description-meta: How to use solver aided language to solve a puzzle
 ---
 
 Would n't it be interesting if programming language is aided with SMT solvers. [Rosette](https://docs.racket-lang.org/rosette-guide/index.html) is such language.

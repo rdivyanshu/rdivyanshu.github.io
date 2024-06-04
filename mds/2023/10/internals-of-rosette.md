@@ -1,5 +1,7 @@
 ---   
 title: Under the hood of Rosette
+date-meta: 2023-10-24
+description-meta: How Rosette works and why it generates nice SAT encoding ?
 ---
 
 Rosette is a solver-aided language. Its [documentation](https://docs.racket-lang.org/rosette-guide/index.html) has good overview of how it can

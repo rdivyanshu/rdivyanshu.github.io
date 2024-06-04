@@ -1,5 +1,7 @@
 ---   
 title: A bit on Quantile Sketching
+date-meta: 2023-04-16
+description-meta: How to calculate percentiles without using too much memory ?
 ---
 
 As part of production monitoring it is standard practice to measure `p95`, `p99` latencies. We also want to query

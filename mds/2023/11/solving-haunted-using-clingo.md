@@ -1,5 +1,7 @@
 ---   
 title: Uncovering ghouls using Answer Set Programming
+date-meta: 2023-11-29
+description-meta: Spin up Answer Set Programming for another puzzle solving
 ---
 
 Recently I came across this nice puzzle - [Haunted](https://krazydad.com/haunted/). These days
