@@ -1,6 +1,7 @@
 ---   
 title: Blogs
 ---
+Subscribe via [atom](./feed.xml)
 
 ### May 2024
 - [A Formalization in Lean](./posts/2024/05/a-formalization-in-lean.html)

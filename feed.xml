@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+ <id>https://rdivyanshu.github.io/</id>
+ <title>Blogs</title>
+ <link href="https://rdivyanshu.github.io/feed.xml" rel="self"/>
+ <link href="https://rdivyanshu.github.io/"/>
+ <updated>2024-06-04T16:41:31+05:30</updated>
+ <author><name>Divyanshu Ranjan</name></author>
+ <entry>
+  <id>https://rdivyanshu.github.io/posts/2024/05/a-formalization-in-lean.html</id>
+  <title>A Formalization in Lean</title>
+  <link href="https://rdivyanshu.github.io/posts/2024/05/a-formalization-in-lean.html"/>
+  <updated>2024-04-24T00:00:00+05:30</updated>
+  <summary>Let's formalization olympiad problem in Lean</summary>
+ </entry>
+ <entry>
+  <id>https://rdivyanshu.github.io/posts/2024/01/tla-logic-in-dafny.html</id>
+  <title>Verifying using temporal logic of action in Dafny</title>
+  <link href="https://rdivyanshu.github.io/posts/2024/01/tla-logic-in-dafny.html"/>
+  <updated>2024-01-25T00:00:00+05:30</updated>
+  <summary>How to write and proof temporal logic statements in Dafny ?</summary>
+ </entry>
+ <entry>
+  <id>https://rdivyanshu.github.io/posts/2023/11/solving-haunted-using-clingo.html</id>
+  <title>Uncovering ghouls using Answer Set Programming</title>
+  <link href="https://rdivyanshu.github.io/posts/2023/11/solving-haunted-using-clingo.html"/>
+  <updated>2023-11-29T00:00:00+05:30</updated>
+  <summary>Spin up Answer Set Programming for another puzzle solving</summary>
+ </entry>
+ <entry>
+  <id>https://rdivyanshu.github.io/posts/2023/10/internals-of-rosette.html</id>
+  <title>Under the hood of Rosette</title>
+  <link href="https://rdivyanshu.github.io/posts/2023/10/internals-of-rosette.html"/>
+  <updated>2023-10-24T00:00:00+05:30</updated>
+  <summary>How Rosette works and why it generates nice SAT encoding ?</summary>
+ </entry>
+ <entry>
+  <id>https://rdivyanshu.github.io/posts/2023/09/drawing-hat-tiling.html</id>
+  <title>Drawing hat tiling using Racket</title>
+  <link href="https://rdivyanshu.github.io/posts/2023/09/drawing-hat-tiling.html"/>
+  <updated>2023-09-20T00:00:00+05:30</updated>
+  <summary>Hats! Hats! Substitution tiling in racket</summary>
+ </entry>
+ <entry>
+  <id>https://rdivyanshu.github.io/posts/2023/08/stuttering-steps-in-tla.html</id>
+  <title>Stuttering Steps and Temporal Formulas in TLA+</title>
+  <link href="https://rdivyanshu.github.io/posts/2023/08/stuttering-steps-in-tla.html"/>
+  <updated>2023-08-11T00:00:00+05:30</updated>
+  <summary>Why TLA+ insists on stuttering steps ?</summary>
+ </entry>
+ <entry>
+  <id>https://rdivyanshu.github.io/posts/2023/07/solving-hitori-using-clingo.html</id>
+  <title>Encoding Hitori in Answer Set Programming</title>
+  <link href="https://rdivyanshu.github.io/posts/2023/07/solving-hitori-using-clingo.html"/>
+  <updated>2023-07-08T00:00:00+05:30</updated>
+  <summary>How to encode puzzle in answer set programming ?</summary>
+ </entry>
+ <entry>
+  <id>https://rdivyanshu.github.io/posts/2023/04/quantile-sketching.html</id>
+  <title>A bit on Quantile Sketching</title>
+  <link href="https://rdivyanshu.github.io/posts/2023/04/quantile-sketching.html"/>
+  <updated>2023-04-16T00:00:00+05:30</updated>
+  <summary>How to calculate percentiles without using too much memory ?</summary>
+ </entry>
+ <entry>
+  <id>https://rdivyanshu.github.io/posts/2023/04/next-permutation-in-dafny.html</id>
+  <title>Another verified program in Dafny</title>
+  <link href="https://rdivyanshu.github.io/posts/2023/04/next-permutation-in-dafny.html"/>
+  <updated>2023-04-25T00:00:00+05:30</updated>
+  <summary>Let's write next permutation algorithm in Dafny</summary>
+ </entry>
+ <entry>
+  <id>https://rdivyanshu.github.io/posts/2021/07/two-sum-problem-in-dafny.html</id>
+  <title>A verified program in Dafny</title>
+  <link href="https://rdivyanshu.github.io/posts/2021/07/two-sum-problem-in-dafny.html"/>
+  <updated>2021-07-26T00:00:00+05:30</updated>
+  <summary>Let's write verified two sum program in Dafny</summary>
+ </entry>
+</feed>
