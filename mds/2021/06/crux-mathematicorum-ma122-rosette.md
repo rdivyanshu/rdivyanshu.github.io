@@ -28,10 +28,10 @@ Now we will assign professions to persons. But instead of traditional assignment
 `choose*` method from `angelic` module allows us to do this. A note on encoding I am using variables for persons and symbols for professions.
 
 ~~~ {.racket}
-(define baker (apply choose* profession))
-(define carpenter (apply choose* profession))
-(define driver (apply choose* profession))
-(define plumber (apply choose* profession))
+(define baker (apply choose* professions))
+(define carpenter (apply choose* professions))
+(define driver (apply choose* professions))
+(define plumber (apply choose* professions))
 ~~~
 
 Let us list down constraints (fixed) which are true. Each person has different profession and person name don't coincide with their profession.

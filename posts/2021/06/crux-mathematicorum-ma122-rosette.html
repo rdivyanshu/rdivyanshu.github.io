@@ -134,10 +134,10 @@ assignment, We will say profession of a person is any one within list.
 to do this. A note on encoding I am using variables for persons and
 symbols for professions.</p>
 <div class="sourceCode" id="cb3"><pre
-class="sourceCode racket"><code class="sourceCode racket"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="ex">define</span><span class="fu"> baker </span><span class="op">(</span><span class="kw">apply</span> choose* profession<span class="op">))</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="ex">define</span><span class="fu"> carpenter </span><span class="op">(</span><span class="kw">apply</span> choose* profession<span class="op">))</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="ex">define</span><span class="fu"> driver </span><span class="op">(</span><span class="kw">apply</span> choose* profession<span class="op">))</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="ex">define</span><span class="fu"> plumber </span><span class="op">(</span><span class="kw">apply</span> choose* profession<span class="op">))</span></span></code></pre></div>
+class="sourceCode racket"><code class="sourceCode racket"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="ex">define</span><span class="fu"> baker </span><span class="op">(</span><span class="kw">apply</span> choose* professions<span class="op">))</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="ex">define</span><span class="fu"> carpenter </span><span class="op">(</span><span class="kw">apply</span> choose* professions<span class="op">))</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="ex">define</span><span class="fu"> driver </span><span class="op">(</span><span class="kw">apply</span> choose* professions<span class="op">))</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="ex">define</span><span class="fu"> plumber </span><span class="op">(</span><span class="kw">apply</span> choose* professions<span class="op">))</span></span></code></pre></div>
 <p>Let us list down constraints (fixed) which are true. Each person has
 different profession and person name don’t coincide with their
 profession. Even though we have n’t assigned profession to person in
