@@ -50,23 +50,23 @@ being approximate.</p>
 <ul>
 <li>If configured quantiles are <code>p95</code> and <code>p99</code>,
 you can’t query <code>p99.9</code>. When using this approach you need to
-know before hand what quantiles you care about.</li>
+know beforehand what quantiles you care about.</li>
 <li>It is not possible to find quantile over dynamic time range. Only
-quantile over flush interval will right (within error bounds according
-to approximation algorithm).</li>
+quantile over flush interval will be right (within error bounds
+according to approximation algorithm).</li>
 <li>It is not possible to find <code>p99</code> latency, assuming
 <code>p99</code> is configured quantile, across all instances of
 service.</li>
 </ul>
 <p>Reason for last two is there is no meaningful way to combine
 individual quantiles.</p>
-<p>In following discussions I will assuming that quantiles are
-calculated on servers of monitoring stack. To accurately calculate
-quantities we can send all latencies data to server from application
-instances making heavy demand on storage and computation (at query time)
-on monitoring systems. This is unacceptable. To avoid it modern
-monitoring systems use quantile sketches which can calculate quantiles
-values within some error bounds by storing summary of data.</p>
+<p>In following discussions I will assume that quantiles are calculated
+on servers of monitoring stack. To accurately calculate quantities we
+can send all latencies data to server from application instances making
+heavy demand on storage and computation (at query time) on monitoring
+systems. This is unacceptable. To avoid it modern monitoring systems use
+quantile sketches which can calculate quantiles values within some error
+bounds by storing summary of data.</p>
 <p>Idea behind quantile sketching is clients will send out latency
 summary bucketed into bins with each bin measuring how many times
 latency falls within bounds of bucket. Using above data it is possible

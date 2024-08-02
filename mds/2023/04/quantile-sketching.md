@@ -12,13 +12,13 @@ configured quantiles for timer metrics over flush interval and then send data to
 statsite calculates is approximate to reduce memory footprint of statsite library. There are other issues with this approach 
 besides quantiles being approximate.
 
-- If configured quantiles are `p95` and `p99`, you can't query `p99.9`. When using this approach you need to know before hand what quantiles you care about.
-- It is not possible to find quantile over dynamic time range. Only quantile over flush interval will right (within error bounds according to approximation algorithm).
+- If configured quantiles are `p95` and `p99`, you can't query `p99.9`. When using this approach you need to know beforehand what quantiles you care about.
+- It is not possible to find quantile over dynamic time range. Only quantile over flush interval will be right (within error bounds according to approximation algorithm).
 - It is not possible to find `p99` latency, assuming `p99` is configured quantile, across all instances of service.
 
 Reason for last two is there is no meaningful way to combine individual quantiles.
 
-In following discussions I will assuming that quantiles are calculated on servers of monitoring stack. To accurately calculate quantities
+In following discussions I will assume that quantiles are calculated on servers of monitoring stack. To accurately calculate quantities
 we can send all latencies data to server from application instances making heavy demand on storage and computation (at query time) on monitoring 
 systems. This is unacceptable. To avoid it modern monitoring systems use quantile sketches which can calculate quantiles values within some error 
 bounds by storing summary of data. 

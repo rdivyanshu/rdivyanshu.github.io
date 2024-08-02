@@ -137,7 +137,7 @@ indeed permutation of input and it is greater than input. Last
 postcondition enforces that if there is another sequence <code>m</code>
 such that <code>m</code> is permutation of <code>arr</code> and greater
 than <code>arr</code> then either it is equal to <code>res</code> or
-<code>m</code> is greater than <code>res</code>. This inforces that
+<code>m</code> is greater than <code>res</code>. This enforces that
 <code>res</code> is next permutation.</p>
 <div class="sourceCode" id="cb3"><pre
 class="sourceCode dafny"><code class="sourceCode dafny"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">method</span> <span class="va">next_permutation</span><span class="op">(</span><span class="va">arr</span><span class="op">:</span> <span class="dt">array</span><span class="op">&lt;</span><span class="dt">nat</span><span class="op">&gt;)</span></span>
@@ -152,7 +152,7 @@ few invariants thrown below while loop. In the end of method we ask
 Dafny to prove postconditions for us which it obliges. We needed one
 additional lemma <code>identity_permutation</code> and implementation of
 <code>copy</code> and <code>reverse</code> methods with exhaustive
-postconditions. Implemenation of which can be seen <a
+postconditions. Implementation of which can be seen <a
 href="https://gist.github.com/rdivyanshu/c7ced3c3ff2bfc9c3cc38b2cae6609f0">here</a>
 in final verified program.</p>
 <div class="sourceCode" id="cb4"><pre
@@ -201,7 +201,7 @@ class="sourceCode dafny"><code class="sourceCode dafny"><span id="cb4-1"><a href
 <span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>  <span class="va">ok</span> <span class="op">:</span>= <span class="kw">true</span><span class="op">;</span></span>
 <span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>One of favourite saying from <a
+<p>One of favorite saying from <a
 href="https://leino.science/papers/krml233.pdf">Developing Verified
 Programs in Dafny</a> is - How strong or weak to make a specification is
 an engineering choice—a trade-off between assurance and the price to
@@ -222,7 +222,7 @@ while loop).</li>
 condition of second while loop.</li>
 <li><code>res[i..]</code> is increasing sequence. Initially
 <code>res</code> is copy of <code>arr</code> hence <code>res[i..]</code>
-is decreasing sequence. Even after swaping <code>res[i-1]</code> and
+is decreasing sequence. Even after swapping <code>res[i-1]</code> and
 <code>res[j]</code>, <code>res[i..]</code> is decreasing sequence.
 Finally reverse operation makes <code>res[i..]</code> an increasing
 sequence.</li>
@@ -242,8 +242,8 @@ class="sourceCode dafny"><code class="sourceCode dafny"><span id="cb5-1"><a href
 <span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span> <span class="kw">assert</span> <span class="va">res</span><span class="op">[..]</span> == <span class="va">res</span><span class="op">[..(</span><span class="va">i</span><span class="op">-</span><span class="dv">1</span><span class="op">)]</span> <span class="op">+</span> <span class="va">res</span><span class="op">[(</span><span class="va">i</span><span class="op">-</span><span class="dv">1</span><span class="op">)..];</span> <span class="op">}</span></span>
 <span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">multiset</span><span class="op">(</span><span class="va">res</span><span class="op">[(</span><span class="va">i</span><span class="op">-</span><span class="dv">1</span><span class="op">)..]);</span></span>
 <span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span></code></pre></div>
-<p>Complete proof of third postcodition is listed below. Proof uses case
-analysis on index used in <code>greater</code> predicate. There are
+<p>Complete proof of third postcondition is listed below. Proof uses
+case analysis on index used in <code>greater</code> predicate. There are
 three cases to consider. If <code>k</code> is less than <code>i-1</code>
 then <code>arr[..k] == res[..k]</code> and
 <code>arr[k] == res[k]</code>. It is easy to prove
@@ -326,7 +326,7 @@ class="sourceCode dafny"><code class="sourceCode dafny"><span id="cb6-1"><a href
 <span id="cb6-66"><a href="#cb6-66" aria-hidden="true" tabindex="-1"></a>      <span class="op">}</span></span>
 <span id="cb6-67"><a href="#cb6-67" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
 <span id="cb6-68"><a href="#cb6-68" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span></code></pre></div>
-<p>Finally we arrive at case when <code>k</code> is equal
+<p>Finally we arrive at case when <code>k</code> is equal to
 <code>i-1</code>. It requires further case analysis. If
 <code>m[k]</code> is equal to <code>res[k]</code> then
 <code>multiset(m[(k+1)..])</code> is equal to
@@ -337,8 +337,7 @@ the proof. Case <code>m[k]</code> is less than <code>res[k]</code> is
 also impossible as we picked smallest element greater than
 <code>res[k]</code> in <code>multiset(arr[k..])</code> to replace it
 with. Using <code>forall</code> statement we remind Dafny of this fact.
-Establishing false follows similiar pattern as earlier
-contradiction.</p>
+Establishing false follows similar pattern as earlier contradiction.</p>
 <p>Final verified program with all auxiliary lemma is listed <a
 href="https://gist.github.com/rdivyanshu/c7ced3c3ff2bfc9c3cc38b2cae6609f0">here</a>.
 That’s all.</p>

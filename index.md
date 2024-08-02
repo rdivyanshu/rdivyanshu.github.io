@@ -3,6 +3,9 @@ title: Blogs
 ---
 Subscribe via [atom](./feed.xml)
 
+### August 2024
+- [Streams, Calculational Proofs and Dafny](./posts/2024/08/streams-calculation-proof-and-dafny.html)
+
 ### May 2024
 - [A Formalization in Lean](./posts/2024/05/a-formalization-in-lean.html)
 

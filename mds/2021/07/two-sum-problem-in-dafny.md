@@ -4,7 +4,7 @@ date-meta: 2021-07-26
 description-meta: Let's write verified two sum program in Dafny
 ---
 
-In this we will implement and verify solution of two sum problem. Two sum problem asks for a pair of indices in sorted sequence such that elements at those indices add up to given sum. It is given that such indices exists. Linear time implementation uses classic [two pointers technique](https://usaco.guide/silver/2P).
+In this we will implement and verify solution of two sum problem. Two sum problem asks for a pair of indices in sorted sequence such that elements at those indices add up to given sum. It is given that such indices exist. Linear time implementation uses classic [two pointers technique](https://usaco.guide/silver/2P).
 
 We will be using dafny for implementation and verification. Below is translation of [solution](https://rosettacode.org/wiki/Two_sum) in dafny.
 
@@ -67,7 +67,7 @@ method find_indices (s: seq<int>, sm: int)
 }
 ~~~
 
-Notice invariant says  `i <= j`  where as loop condition is `i < j` . This is due to loop invariant should be true after last run of loop. After last run of loop `i` is equal to `j`. If you run above code snippet it will give verification error still reproduced below.
+Notice invariant says  `i <= j`  whereas loop condition is `i < j` . This is due to loop invariant should be true after last run of loop. After last run of loop `i` is equal to `j`. If you run above code snippet it will give verification error still reproduced below.
 
 ~~~{.dafny}
 twosum.dfy(7,19): Error: This loop invariant might not hold on entry.
@@ -94,7 +94,7 @@ method find_indices (s: seq<int>, sm: int)
 This brings us to preconditions of two sum problem 
 
  * Sequence is sorted
- * There exists indices pair, whose elements add upto sum
+ * There exists indices pair, whose elements add up to sum
 
 We need predicate which classifies whether sequence is sorted or not.
 
@@ -184,8 +184,8 @@ lemma {:induction m, n} sorted_elem_lemma(s: seq<int>, m: int, n: int)
 
 With above lemma at hand, we can now prove postcondition holds. Addition invariants which are maintained by loop are
 
-* pair of indices which add upto sum lies between loop variables
-* for every pair of indices in which one of index lies outside loop variables does n't add upto sum
+* pair of indices which add up to sum lies between loop variables
+* for every pair of indices in which one of index lies outside loop variables does n't add up to sum
 
 which is accomplished by following
 

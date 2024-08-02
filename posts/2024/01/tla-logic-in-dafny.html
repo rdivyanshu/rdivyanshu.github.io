@@ -107,15 +107,15 @@ blog</a> we looked into why TLA+ specification enforces SI (stuttering
 insensitivity) and how verifying liveness assertion required us to add
 fairness condition in spec. In this blog we will model timer displaying
 minute in Dafny using temporal logic of action. And then we will prove
-that specifiction, with fairness condition included, implies that timer
+that specification, with fairness condition included, implies that timer
 will eventually reach 0 (In previous blog we model checked this
 property).</p>
-<p>First order of bussiness is encode state of our system, specify what
+<p>First order of business is encode state of our system, specify what
 it is correct initial state and how system moves from one state to
-another. We need to be mindful that our action satistifes stuttering
+another. We need to be mindful that our action satisfies stuttering
 insensitivity requirement of temporal logic of action. Formally step
 <code>st</code> is enabled in state <code>s</code> if there exists state
-<code>e</code> such that <code>st(s, e)</code> is true. There is easlier
+<code>e</code> such that <code>st(s, e)</code> is true. There is easier
 way to say so for DecreaseMin step that is min is greater than 0.</p>
 <div class="sourceCode" id="cb1"><pre
 class="sourceCode dafny"><code class="sourceCode dafny"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">datatype</span> <span class="va">State</span> = <span class="va">State</span><span class="op">(</span><span class="va">min</span><span class="op">:</span> <span class="dt">int</span><span class="op">)</span></span>
@@ -196,7 +196,7 @@ state and try to convince Dafny that we can always find state
 <code>m</code> (I am using index of state as synonyms for that state) in
 which <code>min</code> is 0. There are two cases to consider a) when
 antecedent of weak fairness is true and b) when it is false. In second
-case antecedant being false means there exists state <code>k</code> at
+case antecedent being false means there exists state <code>k</code> at
 which <code>min</code> is less than or equal to 0 which together with
 safety condition proves that <code>min</code> is exactly 0. In first
 case applying antecedent to weakly fair property gives us state
@@ -259,7 +259,7 @@ stops working when <code>min</code> is displaying some number greater
 than 0 - behavior stutters infinitely afterwards. Does our spec include
 such behavior? In this behavior weakly fair condition allows us to find
 sequence of states in which <code>min</code> is decreasing to 0. But
-this is contradiction. Hence such behavior is not statisfied by our
+this is contradiction. Hence such behavior is not satisfied by our
 Spec.</p>
 <p>This is rather silly example to show temporal logic argument - there
 is no two or more processes/servers competing for fair execution. But I

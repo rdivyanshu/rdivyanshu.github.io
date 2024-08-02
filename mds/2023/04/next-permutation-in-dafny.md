@@ -38,7 +38,7 @@ permutation then we can't find next permutation. It is captured by first postcon
 lexicographical order (i.e. `arr` is decreasing sequence). Next postcondition says that array 
 we return is indeed permutation of input and it is greater than input. Last postcondition 
 enforces that if there is another sequence `m` such that `m` is permutation of `arr` and greater 
-than `arr` then either it is equal to `res` or `m` is greater than `res`. This inforces that `res` 
+than `arr` then either it is equal to `res` or `m` is greater than `res`. This enforces that `res` 
 is next permutation.
 
 ~~~{.dafny}
@@ -54,7 +54,7 @@ Proving last postcondition will be hardest so let's ignore this for now. Code li
 below is implementation of algorithm on Wikipedia with few invariants thrown below
 while loop. In the end of method we ask Dafny to prove postconditions for us
 which it obliges. We needed one additional lemma `identity_permutation` and implementation
-of `copy` and `reverse` methods with exhaustive postconditions. Implemenation of which can be
+of `copy` and `reverse` methods with exhaustive postconditions. Implementation of which can be
 seen [here](https://gist.github.com/rdivyanshu/c7ced3c3ff2bfc9c3cc38b2cae6609f0) in final verified program.
 
 ~~~{.dafny}
@@ -105,7 +105,7 @@ method next_permutation(arr: array<nat>)
 }
 ~~~
 
-One of favourite saying from [Developing Verified Programs in Dafny](https://leino.science/papers/krml233.pdf) is 
+One of favorite saying from [Developing Verified Programs in Dafny](https://leino.science/papers/krml233.pdf) is 
 - How strong or weak to make a specification is an engineering choice—a trade-off between assurance and the price to obtain 
 that assurance. We want to prove third postcondition. So let's pay the price - providing argument with enough details 
 that computer can accept it. Convincing will require lines of code as large as initial implementation, as Dafny can't figure
@@ -116,7 +116,7 @@ Few observations that will help latter :
 - `arr[i..]` is decreasing sequence (invariant of first while loop).
 - `arr[i-1]` is greater or equal to elements of sequence `arr[(j+1)..]` (invariant of second while loop).  
 - `arr[i-1]` is less than elements of sequence `arr[i..(j+1)]`. This follows from first observation and loop condition of second while loop.
-- `res[i..]` is increasing sequence. Initially `res` is copy of `arr` hence `res[i..]` is decreasing sequence. Even after swaping `res[i-1]` and `res[j]`,
+- `res[i..]` is increasing sequence. Initially `res` is copy of `arr` hence `res[i..]` is decreasing sequence. Even after swapping `res[i-1]` and `res[j]`,
    `res[i..]` is decreasing sequence. Finally reverse operation makes `res[i..]` an increasing sequence.
 
 Adding assert statement makes Dafny prove last observation which it does without any help. Second statement in code snippet below
@@ -135,7 +135,7 @@ is [calculation](https://cseweb.ucsd.edu/~npolikarpova/publications/vstte13.pdf)
   }
 ~~~
 
-Complete proof of third postcodition is listed below. Proof uses case analysis on index used in `greater` predicate.
+Complete proof of third postcondition is listed below. Proof uses case analysis on index used in `greater` predicate.
 There are three cases to consider. If `k` is less than `i-1` then `arr[..k] == res[..k]` and `arr[k] == res[k]`.
 It is easy to prove `greater(res, m)` from these facts. In fact Dafny is able to do it automatically. Case when `k` is greater than
 `i-1` is impossible which we show by proving false. Observe that `m[k]` should be in `multiset(m[k..])` hence in `multiset(arr[k..])`.
@@ -213,12 +213,12 @@ forall m | permutation(arr[..], m) && greater(arr[..], m) ensures
   }
 ~~~
 
-Finally we arrive at case when `k` is equal `i-1`. It requires further case analysis. If `m[k]` is equal to 
+Finally we arrive at case when `k` is equal to `i-1`. It requires further case analysis. If `m[k]` is equal to 
 `res[k]` then `multiset(m[(k+1)..])` is equal to `multiset(res[(k+1)..])`. By using 
 `increasing_multiset_aux_lemma` which states that increasing sequence is smallest among sequences 
 generated from multiset we complete the proof. Case `m[k]` is less than `res[k]` is also impossible 
 as we picked smallest element greater than `res[k]` in `multiset(arr[k..])` to replace it with. 
-Using `forall` statement we remind Dafny of this fact. Establishing false follows similiar pattern 
+Using `forall` statement we remind Dafny of this fact. Establishing false follows similar pattern 
 as earlier contradiction.
 
 Final verified program with all auxiliary lemma is listed [here](https://gist.github.com/rdivyanshu/c7ced3c3ff2bfc9c3cc38b2cae6609f0). That's all.

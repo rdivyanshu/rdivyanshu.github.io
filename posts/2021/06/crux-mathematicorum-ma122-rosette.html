@@ -109,8 +109,8 @@ is such language. Using SMT solvers Rosette can <a
 href="https://docs.racket-lang.org/rosette-guide/ch_essentials.html#%28part._sec~3averify%29">verify</a>
 that programs comply their specifications, <a
 href="https://docs.racket-lang.org/rosette-guide/ch_essentials.html#%28part._sec~3asynthesize%29">synthesis</a>
-programs given specifications, find counter examples when program
-doesn’t meet its specification and <a
+programs given specifications, find counterexamples when program doesn’t
+meet its specification and <a
 href="https://docs.racket-lang.org/rosette-guide/ch_essentials.html#%28part._sec~3asolve%29">solve
 puzzles</a>.</p>
 <p>In this blogpost, I will be using Rosette to solve a puzzle which is
@@ -139,7 +139,7 @@ class="sourceCode racket"><code class="sourceCode racket"><span id="cb3-1"><a hr
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="ex">define</span><span class="fu"> driver </span><span class="op">(</span><span class="kw">apply</span> choose* professions<span class="op">))</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="ex">define</span><span class="fu"> plumber </span><span class="op">(</span><span class="kw">apply</span> choose* professions<span class="op">))</span></span></code></pre></div>
 <p>Let us list down constraints (fixed) which are true. Each person has
-different profession and person name don’t coincide with their
+different profession and person name doesn’t coincide with their
 profession. Even though we have n’t assigned profession to person in
 traditional sense, first constraint instructs that assigned values are
 all distinct.</p>
@@ -162,7 +162,7 @@ class="sourceCode racket"><code class="sourceCode racket"><span id="cb5-1"><a hr
 assigned given profession in solution once assignment is done by SMT
 solver. <code>profession</code> is an element of
 <code>professions</code> and <code>sol</code> is solution returned by
-SMT solver. <code>evaluate</code> find assignement of variable in
+SMT solver. <code>evaluate</code> find assignment of variable in
 solution.</p>
 <div class="sourceCode" id="cb6"><pre
 class="sourceCode racket"><code class="sourceCode racket"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="op">(</span><span class="ex">define</span><span class="fu"> </span><span class="op">(</span>assigned profession sol<span class="op">)</span></span>

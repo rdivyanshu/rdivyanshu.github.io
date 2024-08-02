@@ -4,8 +4,15 @@
  <title>Blogs</title>
  <link href="https://rdivyanshu.github.io/feed.xml" rel="self"/>
  <link href="https://rdivyanshu.github.io/"/>
- <updated>2024-06-04T16:41:31+05:30</updated>
+ <updated>2024-08-02T21:39:06+05:30</updated>
  <author><name>Divyanshu Ranjan</name></author>
+ <entry>
+  <id>https://rdivyanshu.github.io/posts/2024/08/streams-calculation-proof-and-dafny.html</id>
+  <title>Streams, Calculational Proofs and Dafny</title>
+  <link href="https://rdivyanshu.github.io/posts/2024/08/streams-calculation-proof-and-dafny.html"/>
+  <updated>2024-08-02T00:00:00+05:30</updated>
+  <summary>Reasoning about infinite streams using coinduction and Dafny</summary>
+ </entry>
  <entry>
   <id>https://rdivyanshu.github.io/posts/2024/05/a-formalization-in-lean.html</id>
   <title>A Formalization in Lean</title>
@@ -68,12 +75,5 @@
   <link href="https://rdivyanshu.github.io/posts/2023/04/next-permutation-in-dafny.html"/>
   <updated>2023-04-25T00:00:00+05:30</updated>
   <summary>Let's write next permutation algorithm in Dafny</summary>
- </entry>
- <entry>
-  <id>https://rdivyanshu.github.io/posts/2021/07/two-sum-problem-in-dafny.html</id>
-  <title>A verified program in Dafny</title>
-  <link href="https://rdivyanshu.github.io/posts/2021/07/two-sum-problem-in-dafny.html"/>
-  <updated>2021-07-26T00:00:00+05:30</updated>
-  <summary>Let's write verified two sum program in Dafny</summary>
  </entry>
 </feed>

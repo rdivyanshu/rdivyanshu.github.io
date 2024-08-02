@@ -7,13 +7,13 @@ description-meta: How to write and proof temporal logic statements in Dafny ?
 In [previous blog](../../2023/08/stuttering-steps-in-tla.html) we looked into why TLA+ specification enforces SI (stuttering insensitivity) and 
 how verifying liveness assertion required us to add fairness condition in spec. In this blog
 we will model timer displaying minute in Dafny using temporal logic of action. And then
-we will prove that specifiction, with fairness condition included, implies that timer will eventually
+we will prove that specification, with fairness condition included, implies that timer will eventually
 reach 0 (In previous blog we model checked this property).
 
-First order of bussiness is encode state of our system, specify what it is correct initial state
-and how system moves from one state to another. We need to be mindful that our action satistifes 
+First order of business is encode state of our system, specify what it is correct initial state
+and how system moves from one state to another. We need to be mindful that our action satisfies 
 stuttering insensitivity requirement of temporal logic of action. Formally step `st` is enabled in state 
-`s` if there exists state `e` such that `st(s, e)` is true. There is easlier way to say so for DecreaseMin 
+`s` if there exists state `e` such that `st(s, e)` is true. There is easier way to say so for DecreaseMin 
 step that is min is greater than 0.
 
 ~~~{.dafny}
@@ -93,7 +93,7 @@ lemma SafetyDecreasing(t: imap<nat, State>, m: nat, n: nat)
 
 To prove that timer will eventually reach 0 we start with initial state and try to convince Dafny that we can always 
 find state `m` (I am using index of state as synonyms for that state) in which `min` is 0. There are two cases to consider 
-a) when antecedent of weak fairness is true and b) when it is false. In second case antecedant being false means there exists 
+a) when antecedent of weak fairness is true and b) when it is false. In second case antecedent being false means there exists 
 state `k` at which `min` is less than or equal to 0 which together with safety condition proves that `min` is exactly 0. 
 In first case applying antecedent to weakly fair property gives us state `k` at which next transition will decreases `min`. 
 Note that it just says that `min` will decrease between state `k` and `k+1`. It is required that current state `r` has
@@ -149,7 +149,7 @@ There is alternate way to think about this proof. When does timer will never rea
 safety part of spec (`Init` and `Next`) ? It is when timer stops working when `min` is displaying some number greater 
 than 0 - behavior stutters infinitely afterwards. Does our spec include such behavior? In this behavior weakly fair condition
 allows us to find sequence of states in which `min` is decreasing to 0. But this is contradiction.
-Hence such behavior is not statisfied by our Spec. 
+Hence such behavior is not satisfied by our Spec. 
 
 This is rather silly example to show temporal logic argument - there is no two or more processes/servers competing for fair 
 execution. But I hope this small example which is written in programming language like syntax shows how such argument 

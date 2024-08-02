@@ -12,7 +12,7 @@ straightforward encoding in ASP.
 ![](../../../img/haunted.png)
 
 A sample puzzle instance and its solution is shown above. In haunted you have to figure out 
-where ghouls (ghosts, zombies and draculas) are hidding in rectangular grid. You can't
+where ghouls (ghosts, zombies and draculas) are hiding in rectangular grid. You can't
 directly see ghosts but they are visible in mirrors. Draculas conceal themselves in mirrors but 
 otherwise visible. Zombies have no such powers. You are also given count of each ghoul types
 and how many of them are visible (counting multiplicity) from boundary locations. 

@@ -5,7 +5,7 @@ description-meta: How to use solver aided language to solve a puzzle
 ---
 
 Would n't it be interesting if programming language is aided with SMT solvers. [Rosette](https://docs.racket-lang.org/rosette-guide/index.html) is such language.
-Using SMT solvers Rosette can [verify](https://docs.racket-lang.org/rosette-guide/ch_essentials.html#%28part._sec~3averify%29) that programs comply their specifications, [synthesis](https://docs.racket-lang.org/rosette-guide/ch_essentials.html#%28part._sec~3asynthesize%29) programs given specifications, find counter examples when program doesn't meet its specification and [solve puzzles](https://docs.racket-lang.org/rosette-guide/ch_essentials.html#%28part._sec~3asolve%29).
+Using SMT solvers Rosette can [verify](https://docs.racket-lang.org/rosette-guide/ch_essentials.html#%28part._sec~3averify%29) that programs comply their specifications, [synthesis](https://docs.racket-lang.org/rosette-guide/ch_essentials.html#%28part._sec~3asynthesize%29) programs given specifications, find counterexamples when program doesn't meet its specification and [solve puzzles](https://docs.racket-lang.org/rosette-guide/ch_essentials.html#%28part._sec~3asolve%29).
 
 In this blogpost, I will be using Rosette to solve a puzzle which is taken from [Crux Volume 47, Issue 5](https://cms.math.ca/wp-content/uploads/2021/06/CRUXv47n5-b.pdf).
 
@@ -34,7 +34,7 @@ Now we will assign professions to persons. But instead of traditional assignment
 (define plumber (apply choose* professions))
 ~~~
 
-Let us list down constraints (fixed) which are true. Each person has different profession and person name don't coincide with their profession.
+Let us list down constraints (fixed) which are true. Each person has different profession and person name doesn't coincide with their profession.
 Even though we have n't assigned profession to person in traditional sense, first constraint instructs that assigned values are all distinct.
 
 ~~~ {.racket}
@@ -57,7 +57,7 @@ Next note down constraints (variable) which may or may not hold as some statemen
 ~~~
 
 Before proceeding further we need helper method to find who is assigned given profession in solution once assignment is done by SMT solver.
-`profession` is an element of `professions` and `sol` is solution returned by SMT solver. `evaluate` find assignement of variable
+`profession` is an element of `professions` and `sol` is solution returned by SMT solver. `evaluate` find assignment of variable
 in solution.
 
 ~~~ {.racket}

@@ -105,7 +105,7 @@ in Dafny" />
 <p>In this we will implement and verify solution of two sum problem. Two
 sum problem asks for a pair of indices in sorted sequence such that
 elements at those indices add up to given sum. It is given that such
-indices exists. Linear time implementation uses classic <a
+indices exist. Linear time implementation uses classic <a
 href="https://usaco.guide/silver/2P">two pointers technique</a>.</p>
 <p>We will be using dafny for implementation and verification. Below is
 translation of <a
@@ -166,7 +166,7 @@ class="sourceCode dafny"><code class="sourceCode dafny"><span id="cb3-1"><a href
 <span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
 <span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
 <span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>Notice invariant says <code>i &lt;= j</code> where as loop condition
+<p>Notice invariant says <code>i &lt;= j</code> whereas loop condition
 is <code>i &lt; j</code> . This is due to loop invariant should be true
 after last run of loop. After last run of loop <code>i</code> is equal
 to <code>j</code>. If you run above code snippet it will give
@@ -194,7 +194,7 @@ sequence now as it violates its contracts.</p>
 <p>This brings us to preconditions of two sum problem</p>
 <ul>
 <li>Sequence is sorted</li>
-<li>There exists indices pair, whose elements add upto sum</li>
+<li>There exists indices pair, whose elements add up to sum</li>
 </ul>
 <p>We need predicate which classifies whether sequence is sorted or
 not.</p>
@@ -293,9 +293,9 @@ class="sourceCode dafny"><code class="sourceCode dafny"><span id="cb9-1"><a href
 <p>With above lemma at hand, we can now prove postcondition holds.
 Addition invariants which are maintained by loop are</p>
 <ul>
-<li>pair of indices which add upto sum lies between loop variables</li>
+<li>pair of indices which add up to sum lies between loop variables</li>
 <li>for every pair of indices in which one of index lies outside loop
-variables does n’t add upto sum</li>
+variables does n’t add up to sum</li>
 </ul>
 <p>which is accomplished by following</p>
 <div class="sourceCode" id="cb10"><pre
