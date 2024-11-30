@@ -4,11 +4,11 @@ date-meta: 2023-07-08
 description-meta: How to encode puzzle in answer set programming ?
 ---
 
-[Hitori](https://www.nikoli.co.jp/en/puzzles/hitori/) is logic puzzle with goal to black out some cells such that
+[Hitori](https://www.nikoli.co.jp/en/puzzles/hitori/) is logic puzzle with goal to color some cells black such that
 
 - No number appears twice in row or column.
-- Blacked out cells are not neighbors (share an edge).
-- Non blacked out cells are part of single connected component.
+- Black cells are not neighbors (share an edge).
+- Non black cells are part of single connected component.
 
 ASP (Answer Set Programming) is declarative approach to problem solving. Idea is to give
 description of problem you are solving instead of giving algorithm (how to solve).
@@ -35,41 +35,41 @@ output to be controlled using `#show prime/1`.
 First step to solve Hitori is declaring no number appears twice in row or column in solution.
 
 ~~~{.default}
-1 { blacked(X, Y1); blacked(X, Y2) } 2 :- written(X, Y1, N), written(X, Y2, N), Y1 < Y2.
-1 { blacked(X1, Y); blacked(X2, Y) } 2 :- written(X1, Y, N), written(X2, Y, N), X1 < X2.
+1 { black(X, Y1); black(X, Y2) } 2 :- written(X, Y1, N), written(X, Y2, N), Y1 < Y2.
+1 { black(X1, Y); black(X2, Y) } 2 :- written(X1, Y, N), written(X2, Y, N), X1 < X2.
 ~~~
 
 Body part (part after `:-`) is enabled when same number is written in same row (first rule) /
-same column (second rule) twice. Head part (part before `:-`) states that one of occurrence should be
-blacked out or both. This is achieved using choice rule. Choice rule is of form `{ A; B; C }` which states
+same column (second rule) twice. Head part (part before `:-`) states that one or both occurrence should be
+colored black. This is achieved using choice rule. Choice rule is of form `{ A; B; C }` which states
 that solver has choice to include any subset of this set as derived fact. If choice rule contains numbers before
 and after set then size of subset should be greater or equal to before number and less than or equal to after
 number. `{ A; B; C } = N` means `N { A; B; C } N`.
 
-Blacked out cells are not neighbors can be expressed using following constraints.
+Black cells are not neighbors can be expressed using following constraints.
 
 ~~~{.default}
-:- blacked(X, Y), blacked(X + 1, Y).
-:- blacked(X, Y), blacked(X, Y + 1).
+:- black(X, Y), black(X + 1, Y).
+:- black(X, Y), black(X, Y + 1).
 ~~~
 
-Finally to guarantee non blacked out cells are part of single connected component, we select one of non
-blacked out cell and start doing breadth first search - adding discovered cells in `reachable` relation.
-All non blacked out cells should be reachable.
+Finally to guarantee non black cells are part of single connected component, we select one of non
+black cell and start doing breadth first search - adding discovered cells in `reachable` relation.
+All non black cells should be reachable.
 
 ~~~{.default}
-{ start(X, Y) : written(X, Y, _), not blacked(X, Y) } = 1.
+{ start(X, Y) : written(X, Y, _), not black(X, Y) } = 1.
 reachable(X, Y) :- start(X, Y).
-reachable(X + 1, Y) :- reachable(X, Y), written(X + 1, Y, _), not blacked(X + 1, Y).
-reachable(X, Y + 1) :- reachable(X, Y), written(X, Y + 1, _), not blacked(X, Y + 1).
-reachable(X - 1, Y) :- reachable(X, Y), written(X - 1, Y, _), not blacked(X - 1, Y).
-reachable(X, Y - 1) :- reachable(X, Y), written(X, Y - 1, _), not blacked(X, Y - 1).
+reachable(X + 1, Y) :- reachable(X, Y), written(X + 1, Y, _), not black(X + 1, Y).
+reachable(X, Y + 1) :- reachable(X, Y), written(X, Y + 1, _), not black(X, Y + 1).
+reachable(X - 1, Y) :- reachable(X, Y), written(X - 1, Y, _), not black(X - 1, Y).
+reachable(X, Y - 1) :- reachable(X, Y), written(X, Y - 1, _), not black(X, Y - 1).
 
-:- written(X, Y, _), not blacked(X, Y), not reachable(X, Y).
+:- written(X, Y, _), not black(X, Y), not reachable(X, Y).
 
 ~~~
 
-Finally we add `#show blacked/2` to display blacked cells. Let's now try out our encoding on
+Finally we add `#show black/2` to display black cells. Let's now try out our encoding on
 instance of Hitori which is shown below. 
 ![](../../../img/hitori.png)
 
@@ -91,22 +91,22 @@ written(5, 4, 1). written(5, 5, 6). written(5, 6, 5).
 written(6, 1, 2). written(6, 2, 5). written(6, 3, 4).
 written(6, 4, 6). written(6, 5, 2). written(6, 6, 5).
 
-1 { blacked(X, Y1); blacked(X, Y2) } 2 :- written(X, Y1, N), written(X, Y2, N), Y1 < Y2.
-1 { blacked(X1, Y); blacked(X2, Y) } 2 :- written(X1, Y, N), written(X2, Y, N), X1 < X2.
+1 { black(X, Y1); black(X, Y2) } 2 :- written(X, Y1, N), written(X, Y2, N), Y1 < Y2.
+1 { black(X1, Y); black(X2, Y) } 2 :- written(X1, Y, N), written(X2, Y, N), X1 < X2.
 
-:- blacked(X, Y), blacked(X + 1, Y).
-:- blacked(X, Y), blacked(X, Y + 1).
+:- black(X, Y), black(X + 1, Y).
+:- black(X, Y), black(X, Y + 1).
 
-{ start(X, Y) : written(X, Y, _), not blacked(X, Y) } = 1.
+{ start(X, Y) : written(X, Y, _), not black(X, Y) } = 1.
 reachable(X, Y) :- start(X, Y).
-reachable(X + 1, Y) :- reachable(X, Y), written(X + 1, Y, _), not blacked(X + 1, Y).
-reachable(X, Y + 1) :- reachable(X, Y), written(X, Y + 1, _), not blacked(X, Y + 1).
-reachable(X - 1, Y) :- reachable(X, Y), written(X - 1, Y, _), not blacked(X - 1, Y).
-reachable(X, Y - 1) :- reachable(X, Y), written(X, Y - 1, _), not blacked(X, Y - 1).
+reachable(X + 1, Y) :- reachable(X, Y), written(X + 1, Y, _), not black(X + 1, Y).
+reachable(X, Y + 1) :- reachable(X, Y), written(X, Y + 1, _), not black(X, Y + 1).
+reachable(X - 1, Y) :- reachable(X, Y), written(X - 1, Y, _), not black(X - 1, Y).
+reachable(X, Y - 1) :- reachable(X, Y), written(X, Y - 1, _), not black(X, Y - 1).
 
-:- written(X, Y, _), not blacked(X, Y), not reachable(X, Y).
+:- written(X, Y, _), not black(X, Y), not reachable(X, Y).
 
-#show blacked/2.
+#show black/2.
 ~~~
 
 
